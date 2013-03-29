@@ -59,7 +59,7 @@ require_once 'php/html_page_init.php';
     </style>
 </head>
 <body>
-<?php require 'widgets/bc_header.php'; ?>
+<?php require 'widgets/header.php'; ?>
 <div style="display:none;">
     <label for="users1">Users: </label>
     <input id="users1"/>

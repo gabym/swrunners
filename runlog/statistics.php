@@ -306,7 +306,7 @@ $(document).ready(function () {
 
 <body>
 
-<?php require 'widgets/bc_header.php'; ?>
+<?php require 'widgets/header.php'; ?>
 
 <script type="text/javascript">
     google.load('visualization', '1', {packages:['corechart']});

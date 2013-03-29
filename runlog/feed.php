@@ -319,7 +319,7 @@ require_once 'php/html_page_init.php';
     </style>
 </head>
 <body>
-<?php require 'widgets/bc_header.php'; ?>
+<?php require 'widgets/header.php'; ?>
 <div class="content">
     <h2 class="page_header">מה עשו החבר'ה</h2>
     <div id='feed'></div>

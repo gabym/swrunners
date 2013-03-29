@@ -208,7 +208,7 @@ $(document).ready(function() {
 </style>
 </head>
 <body>
-    <?php require 'widgets/bc_header.php'; ?>
+    <?php require 'widgets/header.php'; ?>
 
     <div class="RunLog" class="ui-widget" style="width:920px; margin-left:auto; margin-right:auto;">
         <div id="create_course_dialog">

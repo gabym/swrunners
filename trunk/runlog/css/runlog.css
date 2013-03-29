@@ -263,3 +263,72 @@ table.tablesorter .active_col {
     text-align: center;
     padding-left: 8px;
 }
+
+/* Comments */
+#feed .event {
+    margin: 25px 0;
+    display: table;
+}
+
+#feed .event .event_type {
+    width: 10px;
+    display: table-cell;
+}
+
+#feed .event .event_title {
+    padding: 0 5px;
+    display: table-cell;
+}
+
+#feed .event .comments {
+    margin-top: 4px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 353px;
+    font-size: 11px;
+}
+
+#feed .event .comments_on {
+    padding: 5px;
+    background-color: #f0f0f0;
+}
+
+#feed .event .comments .separator {
+    margin: 0 2px;
+    height: 1px;
+    overflow: hidden;
+    background-color: #cccccc;
+}
+
+#feed .event .comments .comment {
+    position: relative;
+    padding: 5px;
+    width: 315px;
+}
+
+#feed .event .comments .comment .remove_btn {
+    position: absolute;
+    top: 7px;
+    right: 337px;
+    height: 10px;
+    padding: 2px 3px;
+    line-height: 6px;
+    color: #a0a0a0;
+    text-decoration: none;
+    display: block;
+}
+
+#feed .event .comments .comment .remove_btn:hover {
+    background-color: #ccdae3;
+    color: #45423c;
+    border-radius: 3px;
+}
+
+#feed .event .comments .event_new_comment {
+    width: 345px;
+    height: 16px;
+    padding: 0 3px;
+    font-size: 11px;
+    overflow: hidden;
+    resize: none;
+}

@@ -1,16 +1,4 @@
 <?php
-
-/*
- * Created on May 18, 2012
- *
- * Create a new user shoe
- * 
- * http://www.bc-running.com/runlog/php/create_shoe.php?shoeStr={"name" : "Puma3","type" : 2, "runner_id" : 12345, "start_using_date" : 123134434 }
- * 
- * TODO: create a new table with the shoe types + update the tl_shoes table  - add the shoe type
- * 
- * 
- */
  
 require_once 'ajax_page_init.php';
 require_once 'shoe_common.php';

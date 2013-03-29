@@ -1,15 +1,5 @@
 <?php
 
-/*
- * Created on May 18, 2012
- *
- * Create a new user course
- * 
- * http://www.bc-running.com/runlog/php/create_course.php?shoeStr={"name" : "north mountain","description" : "very nice..", "runner_id" : 12345, "length" : 12.4 }
- *  
- * 
- */
- 
 require_once 'ajax_page_init.php';
 require_once 'course_common.php';
 

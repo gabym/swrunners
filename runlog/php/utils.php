@@ -36,7 +36,7 @@ function getErrorStatus($errMsg, $backtrace=array()) {
 
     $response = array (
         "status" => array (
-            "ecode" => BC_ERR,
+            "ecode" => STATUS_ERR,
             "emessage" => $errMsg
         ));
 
@@ -57,7 +57,7 @@ function getErrorStatusWithDummyData($errMsg, $backtrace=array()) {
 
     $response = array (
         "status" => array (
-            "ecode" => BC_ERR,
+            "ecode" => STATUS_ERR,
             "emessage" => $errMsg
         ),
         "data" => ""
@@ -136,7 +136,7 @@ function getConnection() {
 function returnJSONsuccess($result) {
     $response = array (
         "status" => (array (
-            "ecode" => BC_OK,
+            "ecode" => STATUS_OK,
             "emessage" => "Operation successful."
         )),
         "data" => $result

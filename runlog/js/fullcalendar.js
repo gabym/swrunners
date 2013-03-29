@@ -2415,7 +2415,7 @@ function BasicView(element, calendar, viewName) {
 //						dataType: 'text',
 //						success: function(txt, status) {
 //							var doc = Utils.parseJSON(txt);
-//							if (doc.status.ecode != BC_ERR) {
+//							if (doc.status.ecode != STATUS_ERR) {
 //								if(doc.data.length > 0) {
 //									var html = "<div class='ttip'>";
 //									$.each(doc.data, function(index, item) {
@@ -2482,7 +2482,7 @@ function BasicView(element, calendar, viewName) {
 				},
 				success : function(txt) {
 					var doc = Utils.parseJSON(txt);
-					if (doc.status.ecode == BC_ERR) {
+					if (doc.status.ecode == STATUS_ERR) {
 						alert("Fetch weekend totals failed - " + doc.status.emessage);
 					} else {
 						// json.data should look like ["45","89"]

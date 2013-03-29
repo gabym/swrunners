@@ -64,7 +64,7 @@ var Calendar = {
             },
             success:function (txt) {
                 var doc = Utils.parseJSON(txt);
-                if (doc.status.ecode == BC_ERR) {
+                if (doc.status.ecode == STATUS_ERR) {
                     alert("Fetch event failed - " + doc.status.emessage);
                 } else {
                     var events = [];
@@ -95,7 +95,7 @@ var Calendar = {
             },
             success:function (txt) {
                 var doc = Utils.parseJSON(txt);
-                if (doc.status.ecode == BC_ERR) {
+                if (doc.status.ecode == STATUS_ERR) {
                     alert("Fetch event failed - " + doc.status.emessage);
                 } else {
                     var events = [];
@@ -145,7 +145,7 @@ var Calendar = {
                             },
                             success:function (txt) {
                                 var doc = Utils.parseJSON(txt);
-                                if (doc.status.ecode == BC_ERR) {
+                                if (doc.status.ecode == STATUS_ERR) {
                                     alert("Update failed: "
                                         + doc.status.emessage);
                                 } else {
@@ -170,7 +170,7 @@ var Calendar = {
                                     },
                                     success:function (txt) {
                                         var doc = Utils.parseJSON(txt);
-                                        if (doc.status.ecode == BC_ERR) {
+                                        if (doc.status.ecode == STATUS_ERR) {
                                             alert("Deletion failed: "
                                                 + doc.emessage);
                                         } else {
@@ -235,7 +235,7 @@ var Calendar = {
                                 },
                                 success:function (txt) {
                                     var doc = Utils.parseJSON(txt);
-                                    if (doc.status.ecode == BC_ERR) {
+                                    if (doc.status.ecode == STATUS_ERR) {
                                         alert("Create failed: "
                                             + doc.status.emessage);
                                     } else {
@@ -473,7 +473,7 @@ var EventDialog = {
             },
             success:function (txt) {
                 var doc = Utils.parseJSON(txt);
-                if (doc.status.ecode == BC_ERR) {
+                if (doc.status.ecode == STATUS_ERR) {
                     alert("Fetch shoes and courses failed: " + doc.status.emessage);
                 } else {
                     EventDialog.initSelect('shoesSelect', doc.data.shoes, SELECT_SHOE_PROMPT, 'user_shoes');
@@ -595,7 +595,7 @@ var EventDialog = {
             },
             success:function (txt) {
                 var doc = Utils.parseJSON(txt);
-                if (doc.status.ecode == BC_ERR) {
+                if (doc.status.ecode == STATUS_ERR) {
                     alert("Get event details failed: " + doc.status.emessage);
                 } else {
                     SelectUtils.makeSelection('run_types', doc.data.selected_run_type.id);
@@ -689,7 +689,7 @@ var Functions = {
             },
             success:function (txt) {
                 var doc = Utils.parseJSON(txt);
-                if (doc.status.ecode == BC_ERR) {
+                if (doc.status.ecode == STATUS_ERR) {
                     alert("Deletion failed: "
                         + doc.status.emessage);
                 } else {
@@ -726,7 +726,7 @@ var Functions = {
             },
             success:function (txt) {
                 var doc = Utils.parseJSON(txt);
-                if (doc.status.ecode == BC_ERR) {
+                if (doc.status.ecode == STATUS_ERR) {
                     alert("Fetch users failed - " + json.status.emessage);
                     responseCallback(new Array());
                 } else {

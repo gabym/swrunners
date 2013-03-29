@@ -1,6 +1,6 @@
 <?php
-	define('BC_OK', "1");
-	define('BC_ERR', "0");
+	define('STATUS_OK', "1");
+	define('STATUS_ERR', "0");
 
 	define('LOGGER_ERR', 0);
 	define('LOGGER_DBG', 1);
@@ -31,5 +31,5 @@
 	define('MIN_COOLDOWN_TIME', 0);
 	define('MAX_COOLDOWN_TIME', 3599);
 
-	define('JS_VERSION', 9);
+	define('JS_VERSION', 10);
 	define('CSS_VERSION', 1);

@@ -31,7 +31,7 @@ function populateUserCoursesRecords() {
         dataType : 'text',
         success : function(txt) {
             var doc = Utils.parseJSON(txt);
-            if (doc.status.ecode == BC_ERR) {
+            if (doc.status.ecode == STATUS_ERR) {
    				alert("Failed to get courses data - " + doc.status.emessage);
            	} else {
                 var html = "";
@@ -107,7 +107,7 @@ function updateCourseIsActive(courseId, isActive)
         },
         success : function(txt) {
             var doc = Utils.parseJSON(txt);
-            if (doc.status.ecode == BC_ERR) {
+            if (doc.status.ecode == STATUS_ERR) {
                 alert(doc.status.emessage);
             } else {
                 populateUserCoursesRecords();
@@ -160,7 +160,7 @@ $(document).ready(function() {
                         },
                         success : function(txt) {
                             var doc = Utils.parseJSON(txt);
-                            if (doc.status.ecode == BC_ERR) {
+                            if (doc.status.ecode == STATUS_ERR) {
                                 alert("Create failed: "
                                         + doc.status.emessage);
                             } else {

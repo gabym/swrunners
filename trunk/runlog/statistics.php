@@ -42,7 +42,7 @@ function drawRunnersWeek() {
 
 function drawRunnersWeekCallback(jsonData) {
     if (jsonData.data == "") {
-        if (jsonData.status.ecode == BC_ERR) {
+        if (jsonData.status.ecode == STATUS_ERR) {
             $("div#errMsg").css("color", "red");
             $("div#errMsg").html(jsonData.status.emessage);
         } else {
@@ -101,7 +101,7 @@ function drawRunnerData() {
 function drawRunnerDataCallback(jsonData) {
 
     if (jsonData.data == "") {
-        if (jsonData.status.ecode == BC_ERR) {
+        if (jsonData.status.ecode == STATUS_ERR) {
             $("#errMsg1").css("color", "red");
             $("#errMsg1").html(jsonData.status.emessage);
         } else {
@@ -160,7 +160,7 @@ function drawRunnerTable() {
 
 function drawRunnerTableCallback(jsonData) {
     if (jsonData.data == "") {
-        if (jsonData.status.ecode == BC_ERR) {
+        if (jsonData.status.ecode == STATUS_ERR) {
             $("#errMsg1").css("color", "red");
             $("#errMsg1").html(jsonData.status.emessage);
         } else {

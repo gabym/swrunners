@@ -96,7 +96,7 @@ function truncateLog()
             dataType : 'text',
             success : function(txt) {
                 var doc = Utils.parseJSON(txt);
-                if (doc.status.ecode == BC_ERR) {
+                if (doc.status.ecode == STATUS_ERR) {
                     alert("Failed to truncate log - " + doc.status.emessage);
                 } else {
                     document.location.reload();

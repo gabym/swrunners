@@ -46,7 +46,7 @@ require_once 'php/html_page_init.php';
                 },
                 success: function (txt) {
                     var doc = Utils.parseJSON(txt);
-                    if (doc.status.ecode == BC_ERR) {
+                    if (doc.status.ecode == STATUS_ERR) {
                         alert("Fetch events failed - " + doc.status.emessage);
                     }
                     else {
@@ -80,7 +80,7 @@ require_once 'php/html_page_init.php';
                                 },
                                 success: function(txt){
                                     var doc = Utils.parseJSON(txt);
-                                    if (doc.status.ecode == BC_ERR) {
+                                    if (doc.status.ecode == STATUS_ERR) {
                                         alert("Fetch events failed - " + doc.status.emessage);
                                     }
                                     else {
@@ -162,7 +162,7 @@ require_once 'php/html_page_init.php';
                     },
                     success: function(txt) {
                         var doc = Utils.parseJSON(txt);
-                        if (doc.status.ecode == BC_ERR) {
+                        if (doc.status.ecode == STATUS_ERR) {
                             alert("Create failed: " + doc.status.emessage);
                         }
                         else {
@@ -189,7 +189,7 @@ require_once 'php/html_page_init.php';
                 },
                 success: function(txt) {
                     var doc = Utils.parseJSON(txt);
-                    if (doc.status.ecode == BC_ERR) {
+                    if (doc.status.ecode == STATUS_ERR) {
                         alert("Delete failed: " + doc.status.emessage);
                     }
                     else {

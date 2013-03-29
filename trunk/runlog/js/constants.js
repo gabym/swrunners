@@ -1,5 +1,5 @@
-var BC_OK = 1;
-var BC_ERR = 0;
+var STATUS_OK = 1;
+var STATUS_ERR = 0;
 
 // for event validation
 var MIN_WARMUP_DISTANCE = 0;

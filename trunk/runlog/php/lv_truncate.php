@@ -17,7 +17,7 @@ try {
 
     $response = array (
    		"status" => (array (
-   			"ecode" => BC_OK,
+   			"ecode" => STATUS_OK,
    			"emessage" => "Operation successful."
    		))
    	);

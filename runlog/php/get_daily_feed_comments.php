@@ -1,6 +1,6 @@
 <?php
 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 // day to get comments for
 $date = $_GET['date'];

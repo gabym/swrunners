@@ -1,6 +1,6 @@
 <?php
 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 // single event to get comments for
 $event_id = $_GET['event_id'];

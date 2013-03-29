@@ -6,7 +6,7 @@
  * Window - Preferences - PHPeclipse - PHP - Code Templates
  */
  
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 $runner_id = $memberAuthentication->getMemberId();
 $validationResult = validatePositiveInt($runner_id);

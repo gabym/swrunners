@@ -21,7 +21,7 @@
 // NOTE: since the client is expecting a JSON result - we should always return a valid JSON
 // -----------------------------------------------------------------------------------------
 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 require_once 'ValidationResult.php';
 require_once 'event_common.php';
 

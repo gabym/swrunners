@@ -1,5 +1,5 @@
 <?php 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 $string_date = $_GET['weekly_date'];
 if ($string_date == 0 or !isset($string_date)){

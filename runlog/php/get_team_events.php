@@ -1,6 +1,6 @@
 ﻿<?php
 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 $start_date = $_GET['start_date'];
 $end_date = date('Y-m-d', strtotime('+6 day', strtotime($start_date)));

@@ -6,7 +6,7 @@
  * Deactivate a shoe
  */
 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 //
 // TODO: make sure the shoe that we try to update belongs to the user

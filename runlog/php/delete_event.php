@@ -10,7 +10,7 @@
 // 2) emessage - free text
 // NOTE: since the client is expecting a JSON result - we should always return a valid JSON
 // -----------------------------------------------------------------------------------------
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 $member_id = $_GET['member_id'];
 $validationResult = validatePositiveInt($member_id);

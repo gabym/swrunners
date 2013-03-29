@@ -6,7 +6,7 @@
  * Updating an exisiting event
  * Expecting one JSON string as input  - 'event_fields'
  */
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 require_once 'ValidationResult.php';
 require_once 'event_common.php';
 

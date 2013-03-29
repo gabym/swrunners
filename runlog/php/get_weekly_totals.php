@@ -6,7 +6,7 @@
  * Created on Apr 8, 2012
  *
  */
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 $requestStr = $_GET['request'];
 if (!isset ($requestStr)) {

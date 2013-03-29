@@ -1,6 +1,6 @@
 ﻿<?php
 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 $member_id = $_GET['member_id'];
 $validationResult = validatePositiveInt($member_id);

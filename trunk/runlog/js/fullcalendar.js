@@ -379,7 +379,7 @@ function Calendar(element, options, eventSources) {
 			// Avishay - in case a user was changed we want to call 'currentView.render()' - 
 			// it will make the distance totals calculated and rendered
 			//
-			var BC_RUNNING_HACK = true; 
+			var RUNNING_HACK = true;
 			ignoreWindowResize++; // because renderEvents might temporarily change the height before setSize is reached
 
 			unselect();
@@ -389,7 +389,7 @@ function Calendar(element, options, eventSources) {
 			}
 			
 			var forceEventRender = false;
-			if (BC_RUNNING_HACK || !currentView.start || inc || date < currentView.start || date >= currentView.end) {
+			if (RUNNING_HACK || !currentView.start || inc || date < currentView.start || date >= currentView.end) {
 				// view must render an entire new date range (and refetch/render events)
 				currentView.render(date, inc || 0); // responsible for clearing events
 				setSize(true);

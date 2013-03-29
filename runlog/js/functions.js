@@ -663,6 +663,116 @@ var EventDialog = {
     }
 };
 
+var Comments = {
+
+    /**
+     * appends the html for an event suitable for annotating with comments to the given container
+     * @param event
+     * @returns {string}
+     */
+    appendEvent: function ($container, event) {
+        var eventHtml =
+            '<div class="event">' +
+                '   <div>' +
+                '       <div class="event_type" style="background-color:' + Calendar.getEventColor(event.run_type_id) + '; border:solid 1px ' + Calendar.getEventBorderColor(event.run_type_id) + ';"></div>' +
+                '       <div class="event_title">' + Calendar.getFeedEventHtml(event) + '</div>' +
+                '   </div>' +
+                '   <div class="comments">' +
+                '       <div id="event_comments_' + event.id + '"></div>' +
+                '       <div><textarea id="event_new_comment_' + event.id + '" class="event_new_comment" placeholder="הוספת פרגון..."></textarea></div>' +
+                '   </div>' +
+                '</div>';
+
+        $container.append(eventHtml);
+        $('#event_new_comment_'+event.id).elastic().keypress(Comments.onCommentKeyPress);
+    },
+
+    appendComment: function (comment) {
+        var eventComments = $('#event_comments_' + comment.event_id);
+        if (!eventComments.is(':empty')) {
+            eventComments.append('<div class="separator"></div>');
+        }
+        eventComments.parent().addClass('comments_on');
+        var commentHtml =
+            '<div class="comment" id="event_comment_' + comment.comment_id + '">' +
+            '   <b>' + comment.commenter_name + '</b>: ' + comment.comment +
+            (comment.commenter_name == gMemberName ? '  <a class="remove_btn" href="#" onclick="Comments.removeComment(\'' + comment.event_id + '\', \'' + comment.comment_id + '\'); return false;">x</a>' : '') +
+            '</div>';
+
+        eventComments.append(commentHtml);
+    },
+
+    onCommentKeyPress: function (e) {
+        if (e.keyCode == 13 && !e.shiftKey) {
+            Comments.createComment($(e.target));
+            return false;
+        }
+    },
+
+    createComment: function ($commentTextarea) {
+        var eventId = $commentTextarea.attr('id').replace('event_new_comment_', '');
+        var comment = $commentTextarea.val();
+
+        if (comment) {
+            var eventComment = {
+                event_id: eventId,
+                comment: comment
+            };
+            $.ajax({
+                url: 'php/create_event_comment.php',
+                dataType: 'text',
+                data: {
+                    event_comment: JSON.stringify(eventComment)
+                },
+                success: function (txt) {
+                    var doc = Utils.parseJSON(txt);
+                    if (doc.status.ecode == STATUS_ERR) {
+                        alert("Create failed: " + doc.status.emessage);
+                    }
+                    else {
+                        Comments.appendComment({
+                            event_id: eventId,
+                            comment_id: doc.data.comment_id,
+                            commenter_name: gMemberName,
+                            comment: comment
+                        });
+                        $commentTextarea.val('');
+                    }
+                }
+            });
+        }
+    },
+
+    removeComment: function (eventId, commentId) {
+        $.ajax({
+            url: 'php/delete_event_comment.php',
+            dataType: 'text',
+            data: {
+                event_comment_id: commentId
+            },
+            success: function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == STATUS_ERR) {
+                    alert("Delete failed: " + doc.status.emessage);
+                }
+                else {
+                    var eventComments = $('#event_comments_' + eventId);
+                    var comment = eventComments.find('#event_comment_' + commentId);
+                    var separator = comment.prev('.separator');
+                    if (separator.length == 0) {
+                        var separator = comment.next('.separator');
+                    }
+                    comment.remove();
+                    separator.remove();
+                    if (eventComments.is(':empty')) {
+                        eventComments.parent().removeClass('comments_on');
+                    }
+                }
+            }
+        });
+    }
+}
+
 // A namespace for our functions
 var Functions = {
 

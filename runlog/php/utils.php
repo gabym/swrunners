@@ -1,6 +1,6 @@
 <?php
 
-require_once 'config_bc.php';
+require_once 'config.php';
 require_once 'constants.php';
 require_once 'DBLogger.php';
 require_once 'ValidationResult.php';

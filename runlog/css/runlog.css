@@ -26,13 +26,13 @@ caption, th {
     text-align: right;
 }
 
-#bc_header {
+#header {
     height: 100px;
     background-image: url(../images/header_bg.png);
     background-repeat: repeat-x;
 }
 
-#bc_header_graphics {
+#header_graphics {
     position: relative;
     width: 960px;
     height: 100px;
@@ -42,13 +42,13 @@ caption, th {
     background-repeat: no-repeat;
 }
 
-#bc_logo {
+#logo {
     position: absolute;
     right: 20px;
     top: 6px;
 }
 
-#bc_title {
+#title {
     position: absolute;
     top: 23px;
     right: 35px;

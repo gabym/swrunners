@@ -12,7 +12,7 @@ require_once 'php/html_page_init.php';
           type="text/css"/>
     <link href='./css/fullcalendar.css?v=<?php echo CSS_VERSION;?>' rel='stylesheet' type='text/css'/>
     <link href='./css/jquery.qtip.min.css' rel='stylesheet' type='text/css'/>
-    <link href='./css/runlog.css' rel='stylesheet' type='text/css'/>
+    <link href='./css/runlog.css?v=<?php echo CSS_VERSION;?>' rel='stylesheet' type='text/css'/>
 
     <script src="./js/jquery.min.js" type="text/javascript"></script>
     <script src="./js/jquery-ui.min.js" type="text/javascript"></script>

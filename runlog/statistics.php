@@ -10,7 +10,7 @@ require_once 'php/html_page_init.php';
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.5.1/build/cssreset/cssreset-min.css">
 <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet"
       type="text/css"/>
-<link href='./css/runlog.css' rel='stylesheet' type='text/css'/>
+<link href='./css/runlog.css?v=<?php echo CSS_VERSION;?>' rel='stylesheet' type='text/css'/>
 
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script src="./js/jquery.min.js" type="text/javascript"></script>

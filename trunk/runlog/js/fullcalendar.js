@@ -4843,6 +4843,7 @@ function DayEventRenderer() {
 				"<div" +
 				" class='fc-event-inner fc-event-skin'" +
 				(skinCss ? " style='" + skinCss + "'" : '') +
+                " id='log_event_" + event.event_id + "'" +
 				">";
 			if (!event.allDay && seg.isStart) {
 				html +=

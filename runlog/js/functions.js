@@ -1,0 +1,1202 @@
+/* General functions.js */
+
+// Global - Ajax error handler
+$.ajaxSetup({
+    "error":function (jqXHR, textStatus, errorThrown) {
+        console.log("error " + textStatus);
+        console.log("errorThrown " + errorThrown);
+        console.log("incoming Text " + jqXHR.responseText);
+    }
+});
+
+var Calendar = {
+
+    // initialize the calendar
+    init:function () {
+        $('#calendar').fullCalendar({
+            header:{
+                left:'next,prev today customDate',
+                center:'',
+                right:'title'
+            },
+            editable:false,
+            lazyFetching:false,
+            events:function (start, end, callback) {
+                Calendar.fetchEvents(start, end, callback);
+            },
+            eventClick:function (calEvent, jsEvent, view) {
+                Calendar.handleClickEvent(calEvent, jsEvent, view);
+            },
+            dayClick:function (date, allDay, jsEvent, view) {
+                Calendar.handleClickDay(date, allDay, jsEvent, view);
+            }
+        });
+
+        EventDialog.init();
+    },
+    
+    init2:function () {
+        $('#calendar').fullCalendar({
+            header:{
+                left:'next,prev today customDate',
+                center:'',
+                right:'title'
+            },
+            defaultView: 'basicWeek',
+            editable:false,
+            lazyFetching:false,
+            events:function (start, end, callback) {
+                Calendar.fetchEvents2(start, end, callback);
+            }
+        });
+    },
+
+    // Fetch events from the server
+    fetchEvents:function (start, end, callback) {
+        var the_member_id = $("#users").val();
+        $.ajax({
+            url:'php/get_events.php',
+            dataType:'text',
+            data:{
+                start:Math.round(start.getTime() / 1000),
+                end:Math.round(end.getTime() / 1000),
+                member_id:the_member_id
+            },
+            success:function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == BC_ERR) {
+                    alert("Fetch event failed - " + doc.status.emessage);
+                } else {
+                    var events = [];
+                    $.each(doc.data, function (index, item) {
+                        events.push({
+                            event_id:item.id,
+                            title:Calendar.getEventTitle(item),
+                            start:item.start,
+                            member_id:the_member_id,
+                            color:Calendar.getEventColor(item.run_type_id),
+                            borderColor:Calendar.getEventBorderColor(item.run_type_id)
+                        });
+                    });
+                    callback(events);
+                }
+            }
+        });
+    },
+    
+    // Fetch events from the server
+    fetchEvents2:function (start, end, callback) {
+        $.ajax({
+            url:'php/get_team_events.php',
+            dataType:'text',
+            data:{
+                start:Math.round(start.getTime() / 1000),
+                end:Math.round(end.getTime() / 1000)
+            },
+            success:function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == BC_ERR) {
+                    alert("Fetch event failed - " + doc.status.emessage);
+                } else {
+                    var events = [];
+                    $.each(doc.data, function (index, item) {
+                        events.push({
+                            event_id:item.id,
+                            title:Calendar.getEventTitle(item),
+                            start:item.start,
+                            member_id:the_member_id,
+                            color:Calendar.getEventColor(item.run_type_id),
+                            borderColor:Calendar.getEventBorderColor(item.run_type_id)
+                        });
+                    });
+                    callback(events);
+                }
+            }
+        });
+    },
+
+    // handle clicking on 'event'
+    handleClickEvent:function (calEvent, jsEvent, view) {
+
+        if ($('#users').val() != memberId) {
+            // member is looking at another runner's log - no permission to edit or delete an event
+            return;
+        }
+
+        $('#create_update_event_dialog').dialog({
+            height:460,
+            width:380,
+            show:{
+                effect:'drop',
+                direction:'rtl'
+            },
+            buttons:{
+                "אשר":function () {
+                    var event_fields_data = EventDialog.getData();
+                    if (event_fields_data != null) {
+                        // passed validation
+                        event_fields_data = Calendar.appendIdentityFields(event_fields_data, calEvent);
+                        var event_fields_str = JSON.stringify(event_fields_data);
+                        $.ajax({
+                            url:'php/update_event.php',
+                            dataType:'text',
+                            data:{
+                                event_fields:event_fields_str
+                            },
+                            success:function (txt) {
+                                var doc = Utils.parseJSON(txt);
+                                if (doc.status.ecode == BC_ERR) {
+                                    alert("Update failed: "
+                                        + doc.status.emessage);
+                                } else {
+                                    $('#calendar').fullCalendar('render');
+
+                                }
+                            }
+                        });
+                        $(this).dialog("close");
+                    }
+                },
+                "מחק":function () {
+                    $("#delete_dialog").dialog({
+                        buttons:{
+                            "אשר":function () {
+                                $.ajax({
+                                    url:'php/delete_event.php',
+                                    dataType:'text',
+                                    data:{
+                                        event_id:calEvent.event_id,
+                                        member_id:calEvent.member_id
+                                    },
+                                    success:function (txt) {
+                                        var doc = Utils.parseJSON(txt);
+                                        if (doc.status.ecode == BC_ERR) {
+                                            alert("Deletion failed: "
+                                                + doc.emessage);
+                                        } else {
+                                            $('#calendar').fullCalendar(
+                                                'render');
+                                        }
+                                    }
+                                });
+                                $('#create_update_event_dialog').dialog('close');
+                                $(this).dialog("close");
+                            },
+                            "סגור":function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                    $('#delete_dialog').css('background-color', '#feffe5');
+                    $("#delete_dialog").dialog("open");
+                },
+                "סגור":function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+        $('#create_update_event_dialog').css('background-color', '#feffe5');
+        EventDialog.setData(calEvent);
+        $("#create_update_event_dialog").dialog("open");
+    },
+
+    // Handle clicking on the calendar cell (not on the event)
+    handleClickDay:function (date, allDay, jsEvent, view) {
+
+        if ($('#users').val() != memberId) {
+            // member is looking at another runner's log - no permission to add an event
+            return;
+        }
+
+        var the_date = Time.hebDateToSqlDate(Time.jsDateToHebDate(date));
+
+        EventDialog.reset();
+        $('#create_update_event_dialog').dialog(
+            {
+                height:460,
+                width:380,
+                show:{
+                    effect:'drop',
+                    direction:'rtl'
+                },
+                buttons:{
+                    "אשר":function () {
+                        // assuming we passes validation ..
+                        var event_fields_data = EventDialog.getData();
+                        if (event_fields_data != null) {
+                            // passed validation
+                            event_fields_data.date = the_date;
+                            var event_fields_str = JSON.stringify(event_fields_data);
+                            $.ajax({
+                                url:'php/create_event.php',
+                                dataType:'text',
+                                data:{
+                                    event_fields:event_fields_str
+                                },
+                                success:function (txt) {
+                                    var doc = Utils.parseJSON(txt);
+                                    if (doc.status.ecode == BC_ERR) {
+                                        alert("Create failed: "
+                                            + doc.status.emessage);
+                                    } else {
+                                        $('#calendar').fullCalendar('render');
+
+                                    }
+                                }
+                            });
+                            $(this).dialog("close");
+                        }
+                    },
+                    "סגור":function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        $('#create_update_event_dialog').css('background-color', '#feffe5');
+        $("#create_update_event_dialog").dialog("open");
+    },
+
+    appendIdentityFields:function (eventFields, calEvent) {
+        eventFields.event_id = calEvent.event_id;
+        eventFields.member_id = calEvent.member_id;
+        return eventFields;
+    },
+
+    getEventTitle:function (event) {
+        var eventType = event.type;
+        var eventTotalDistance = EventFormatter.getTotalDistance(event.warmup_distance, event.run_distance, event.cooldown_distance, event.run_type_id);
+        var runDistanceAndPace = EventFormatter.getRunDistanceAndPace(event.warmup_distance, event.run_distance, event.cooldown_distance, event.run_time, event.run_type_id)
+        var notes = event.notes;
+
+        var eventTitle = '<span class="runlogEventTitle">' + eventType + '</span>';
+        if (eventTotalDistance != null) {
+            eventTitle += '<br>' + eventTotalDistance;
+        }
+        if (runDistanceAndPace != null) {
+            eventTitle += ' ' + runDistanceAndPace;
+        }
+        if (notes != null && notes != '') {
+            if (eventTotalDistance != null || runDistanceAndPace != null) {
+                eventTitle += '<div class="runlogEventSeparator"></div>';
+            }
+            else {
+                eventTitle += '<br>';
+            }
+            eventTitle += Utils.htmlEscape(notes);
+        }
+
+        return eventTitle;
+    },
+
+    /**
+     * Based on the event type (recovery run,long run,etc) return a color
+     * TODO: use user profile to get custom colors
+     */
+    getEventColor:function (eventType) {
+        return EVENT_TYPES_ATTRIBUTES[eventType].getColor();
+    },
+
+    /**
+     * Based on the event type (recovery run,long run,etc) return a the border color of the event box
+     */
+    getEventBorderColor:function (eventType) {
+        return EVENT_TYPES_ATTRIBUTES[eventType].getBorderColor();
+    },
+
+    getFeedEventHtml: function(event) {
+
+        var runnerName = event.name;
+        var eventTypeName = event.type;
+        var eventTotalDistance = EventFormatter.getTotalDistance(event.warmup_distance, event.run_distance, event.cooldown_distance, event.run_type_id);
+        var runDistanceAndPace = EventFormatter.getRunDistanceAndPace(event.warmup_distance, event.run_distance, event.cooldown_distance, event.run_time, event.run_type_id)
+        var notes = event.notes;
+
+        var html = '';
+        html += "<div style=\"font-weight:bold;\">";
+        html += "<span>" + runnerName + ", </span>";
+        html += "<span>" + eventTypeName + "</span>";
+        if (eventTotalDistance != null)
+        {
+            html += ": <span>"+eventTotalDistance+"</span>";
+        }
+        html += "</div>";
+
+        if (runDistanceAndPace != null)
+        {
+            html += "<div><span>"+runDistanceAndPace+"</span></div>";
+        }
+
+        if (notes != '')
+        {
+            html += "<div><span>"+notes+"</span></div>";
+        }
+
+        return html;
+    }
+}
+
+var EventFormatter = {
+    getTotalDistance:function (warmupDistance, runDistance, cooldownDistance, runTypeId) {
+
+        var totalDistance = parseFloat(warmupDistance) + parseFloat(runDistance) + parseFloat(cooldownDistance);
+        if (totalDistance == NaN || totalDistance == 0 || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.EVENT_CANCELED) {
+            return null;
+        }
+        else {
+            return (totalDistance).toFixed(1) + ' ק"מ';
+        }
+    },
+
+    getRunDistanceAndPace:function (warmupDistance, runDistance, cooldownDistance, runTime, runTypeId) {
+
+        if (runTypeId == EventTypes.INTERVAL_RUN || runTypeId == EventTypes.HILLS_RUN || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.EVENT_CANCELED) {
+            // no meaning for run pace in these cases
+            return null;
+        }
+
+        var runDistance = parseFloat(runDistance);
+        if (runDistance == NaN || runDistance == 0) {
+            return;
+        }
+
+        var runTimeFormatted = null;
+        if (runTime > 3600) {
+            runTimeFormatted = Time.convertSecondsToHMMSS(runTime);
+        }
+        else if (runTime > 0) {
+            runTimeFormatted = Time.convertSecondsToMMSS(runTime);
+        }
+        var runPace = Time.calculatePace(runDistance, runTime);
+        var warmupOrCooldown = (parseFloat(warmupDistance) > 0 || parseFloat(cooldownDistance) > 0);
+
+        var runDistanceFormatted = (runDistance).toFixed(1) + ' ק"מ';
+        var runDistanceAndPace = '';
+        if (runTimeFormatted != null) {
+            if (warmupOrCooldown) {
+                runDistanceAndPace += 'מתוכם ' + runDistanceFormatted;
+            }
+
+            runDistanceAndPace += ' ב- ' + runTimeFormatted;
+            if (runPace != null) {
+                runDistanceAndPace += ' (' + runPace + ')';
+            }
+        }
+        else if (warmupOrCooldown) {
+            runDistanceAndPace += 'מתוכם ' + runDistanceFormatted + ' תרגיל';
+        }
+
+        return runDistanceAndPace;
+    }
+}
+
+var EventDialog = {
+
+    // initializes the event dialog with default values and fills the shoes and courses <select>s
+    // with values appropriate to the current user
+    init:function () {
+        this.initRunTypes();
+        this.initShoesAndCourses();
+        $('#courseSelect').change(this.courseChanged);
+
+        // input masking for distance, duration fields
+        $.mask.definitions['5'] = "[0-5]";
+        $('#warmup_distance').mask('9.9', {placeholder:"0"});
+        $('#warmup_time').mask('59:59', {placeholder:"0"});
+        $('#run_distance').mask('99.9', {placeholder:"0"});
+        $('#run_time').mask('9:59:59', {placeholder:"0"});
+        $('#cooldown_distance').mask('9.9', {placeholder:"0"});
+        $('#cooldown_time').mask('59:59', {placeholder:"0"});
+
+        // handler for distance, duration change event in order to update pace
+        $('#duration_distance_pace input[type="text"]').blur(this.calculatePace);
+    },
+
+    // resets the event dialog to its default values
+    reset:function () {
+        SelectUtils.makeSelection('run_types', EventTypes.RECOVERY_RUN);
+        $('#run_types').trigger('change');
+        SelectUtils.resetSelect('shoesSelect');
+        SelectUtils.resetSelect('courseSelect');
+
+        $('#warmup_distance').val('0.0');
+        $('#warmup_time').val('00:00');
+        $('#warmup_pace').text('');
+        $('#run_distance').val('00.0');
+        $('#run_time').val('0:00:00');
+        $('#run_pace').text('');
+        $('#cooldown_distance').val('0.0');
+        $('#cooldown_time').val('00:00');
+        $('#cooldown_pace').text('');
+
+        $('#notesContainer').empty().append('<textarea id="notes"></textarea>');
+        $('#notes').val('').elastic();
+    },
+
+    // populate the run types <select>
+    initRunTypes:function () {
+        var select = document.getElementById("run_types");
+        for (var key in EVENT_TYPES_ATTRIBUTES) {
+            var value = key;
+            var label = EVENT_TYPES_ATTRIBUTES[key].getLabel();
+            var option = new Option(label, value);
+            select.options[select.options.length] = option;
+        }
+
+        // handler for the run types combo box change
+        $('#run_types').change(this.runTypeChanged);
+    },
+
+    // populate a <select> with values + a pre defined select prompt (applies for shoes and courses)
+    initSelect:function (controlId, data, selectPrompt, controlContainer, extraDataFieldName) {
+
+        SelectUtils.resetSelect(controlId, true);
+
+        if (data.length > 0) {
+            SelectUtils.addOptionAtTopAndSelectIt(controlId, selectPrompt, NOT_SELECTED, false);
+            SelectUtils.populateSelect(controlId, data, extraDataFieldName);
+
+            $('#' + controlContainer).show();
+        } else {
+            $('#' + controlContainer).hide();
+
+        }
+    },
+
+    // populate the shoes and courses <select>
+    initShoesAndCourses:function () {
+        var the_member_id = $("#users").val();
+        $.ajax({
+            url:'php/get_shoes_and_courses.php',
+            dataType:'text',
+            data:{
+                member_id:the_member_id
+            },
+            success:function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == BC_ERR) {
+                    alert("Fetch shoes and courses failed: " + doc.status.emessage);
+                } else {
+                    EventDialog.initSelect('shoesSelect', doc.data.shoes, SELECT_SHOE_PROMPT, 'user_shoes');
+                    EventDialog.initSelect('courseSelect', doc.data.courses, SELECT_COURSE_PROMPT, 'user_courses', 'length');
+                }
+            }
+        });
+    },
+
+    // sets the given item as the selected option one in the given <select>
+    // if the given item doesn't exist in the <select>, its name is displayed instead in a <span>
+    setSelectedItemOrShowLabel:function (selectId, itemId, itemText, inactive) {
+        SelectUtils.resetSelect(selectId);
+
+        if (itemId == null) {
+            // no shoe is selected
+            return;
+        }
+
+        var itemSelected = SelectUtils.makeSelection(selectId, itemId);
+
+        if (!itemSelected) {
+            // there is no match but there is a valid itemText
+            if (itemText != null) {
+                $('#' + selectId).hide();
+                $('#' + inactive).text(itemText).show();
+            } else {
+                $('#' + inactive).hide();
+                $('#' + selectId).hide();
+            }
+        } else {
+            // we have a match
+            $('#' + inactive).hide();
+            $('#' + selectId).show();
+        }
+    },
+
+    validateDistance:function (fieldName, fieldValue, minValue, maxValue) {
+        if (fieldValue == null || parseFloat(fieldValue) != fieldValue) {
+            alert("מרחק " + fieldName + " לא תקין");
+            return false;
+        }
+
+        if (fieldValue < minValue) {
+            alert("מרחק " + fieldName + " חייב להיות לפחות " + minValue);
+            return false;
+        }
+
+        if (fieldValue > maxValue) {
+            alert("מרחק " + fieldName + " חייב להיות עד " + maxValue);
+            return false;
+        }
+
+        return true;
+    },
+
+    validateDuration:function (fieldName, fieldValue, minValue, maxValue, conversionFunction) {
+        if (fieldValue == null) {
+            alert("זמן " + fieldName + " לא תקין");
+            return false;
+        }
+
+        if (fieldValue < minValue) {
+            alert("זמן " + fieldName + " חייב להיות לפחות " + conversionFunction(minValue));
+            return false;
+        }
+
+        if (fieldValue > maxValue) {
+            alert("זמן " + fieldName + " חייב להיות עד " + conversionFunction(maxValue));
+            return false;
+        }
+
+        return true;
+    },
+
+    // Collect the event fields into single object
+    getData:function () {
+        var eventFields = new Object();
+        eventFields.warmup_distance = $('#warmup_distance').val();
+        if (!this.validateDistance("חימום", eventFields.warmup_distance, MIN_WARMUP_DISTANCE, MAX_WARMUP_DISTANCE)) {
+            return null;
+        }
+        eventFields.warmup_time = Time.convertMMSSToSeconds($('#warmup_time').val());
+        if (!this.validateDuration("חימום", eventFields.warmup_time, MIN_WARMUP_TIME, MAX_WARMUP_TIME, Time.convertSecondsToMMSS)) {
+            return null;
+        }
+        eventFields.run_distance = $('#run_distance').val();
+        if (!this.validateDistance("תרגיל", eventFields.run_distance, MIN_RUN_DISTANCE, MAX_RUN_DISTANCE)) {
+            return null;
+        }
+        eventFields.run_time = Time.convertHMMSSToSeconds($('#run_time').val());
+        if (!this.validateDuration("תרגיל", eventFields.run_time, MIN_RUN_TIME, MAX_RUN_TIME, Time.convertSecondsToHMMSS)) {
+            return null;
+        }
+        eventFields.cooldown_distance = $('#cooldown_distance').val();
+        if (!this.validateDistance("שחרור", eventFields.cooldown_distance, MIN_COOLDOWN_DISTANCE, MAX_COOLDOWN_DISTANCE)) {
+            return null;
+        }
+        eventFields.cooldown_time = Time.convertMMSSToSeconds($('#cooldown_time').val());
+        if (!this.validateDuration("שחרור", eventFields.cooldown_time, MIN_COOLDOWN_TIME, MAX_COOLDOWN_TIME, Time.convertSecondsToMMSS)) {
+            return null;
+        }
+        eventFields.notes = $('#notes').val();
+        eventFields.shoe_id = $('#shoesSelect').val();
+        eventFields.course_id = $('#courseSelect').val();
+        eventFields.run_type_id = $('#run_types').val();
+        eventFields.runner_id = $('#users').val();
+        return eventFields;
+    },
+
+    // set the data and populates relevant fields according to the given calendar event
+    setData:function (calEvent) {
+        $.ajax({
+            url:'php/get_event_details.php',
+            dataType:'text',
+            data:{
+                event_id:calEvent.event_id,
+                member_id:calEvent.member_id
+            },
+            success:function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == BC_ERR) {
+                    alert("Get event details failed: " + doc.status.emessage);
+                } else {
+                    SelectUtils.makeSelection('run_types', doc.data.selected_run_type.id);
+                    EventDialog.setSelectedItemOrShowLabel('shoesSelect', doc.data.selected_shoe.id, doc.data.selected_shoe.shoe_name, 'inactive_shoe');
+                    if (doc.data.selected_course == null) {
+                        doc.data.selected_course = 0;
+                    }
+                    EventDialog.setSelectedItemOrShowLabel('courseSelect', doc.data.selected_course.id, doc.data.selected_course.course_name, 'inactive_course');
+                    $('#run_types').trigger('change');
+
+                    var fields = doc.data.event_fields;
+                    $('#warmup_distance').val(fields.warmup_distance);
+                    $('#warmup_time').val(Time.convertSecondsToMMSS(fields.warmup_time));
+                    $('#run_distance').val(Time.paddWithZero(fields.run_distance));
+                    $('#run_time').val(Time.convertSecondsToHMMSS(fields.run_time));
+                    $('#cooldown_distance').val(fields.cooldown_distance);
+                    $('#cooldown_time').val(Time.convertSecondsToMMSS(fields.cooldown_time));
+                    $('#notesContainer').empty().append('<textarea id="notes"></textarea>');
+                    $('#notes').val(fields.notes).elastic();
+                    EventDialog.calculatePace();
+                }
+            }
+        });
+    },
+
+    /**
+     * Hides the distance-duration-pace table when run type is 'other sport', shows it otherwise
+     */
+    runTypeChanged:function () {
+        var runType = $('#run_types').val();
+        if (runType == EventTypes.OTHER_SPORT || runType == EventTypes.EVENT_CANCELED) {
+            $('#user_shoes').hide();
+            $('#user_courses').hide();
+            $('#duration_distance_pace').hide();
+        }
+        else {
+            if ($('#user_shoes option').length > 1) {
+                $('#user_shoes').show();
+            }
+            if ($('#user_courses option').length > 1) {
+                $('#user_courses').show();
+            }
+            $('#duration_distance_pace').show();
+        }
+    },
+
+    courseChanged:function () {
+        var courseLength = $('option:selected', $('#courseSelect')).attr('length');
+        if (courseLength != null) {
+            courseLength = parseFloat(courseLength);
+            if (courseLength > 0) {
+                $('#run_distance').val(Time.paddWithZero(courseLength.toFixed(1)));
+            }
+        }
+    },
+
+    // calculates the pace values according to distance and duration and displays the values if calculation succeeds
+    calculatePace:function () {
+        var warmup_pace = Time.calculatePace($('#warmup_distance').val(), Time.convertMMSSToSeconds($('#warmup_time').val()));
+        $('#warmup_pace').html(warmup_pace);
+        var run_pace = Time.calculatePace($('#run_distance').val(), Time.convertHMMSSToSeconds($('#run_time').val()));
+        $('#run_pace').html(run_pace);
+        var cooldown_pace = Time.calculatePace($('#cooldown_distance').val(), Time.convertMMSSToSeconds($('#cooldown_time').val()));
+        $('#cooldown_pace').html(cooldown_pace);
+    }
+};
+
+// A namespace for our functions
+var Functions = {
+
+    // init the users autocomplete
+    initUsersAutoComplete:function () {
+        $("#users1").autocomplete(
+            {
+                source:Functions.fetchUsersWithFilter,
+                minLength:2,
+                select:function (event, ui) {
+                    //console.log(ui.item ? "Selected: " + ui.value + " aka "
+                    //		+ ui.label : "Nothing selected, input was "
+                    //		+ this.value);
+                }
+            });
+    },
+
+    // fetch the users from the server and populate the <select> of the users
+    populateUsersSelect:function (onSuccessCallback) {
+        $.ajax({
+            url:'php/get_users.php',
+            dataType:'text',
+            data:{
+            },
+            success:function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == BC_ERR) {
+                    alert("Deletion failed: "
+                        + doc.status.emessage);
+                } else {
+                    $.each(doc.data, function (index, item) {
+                        $('#users')
+                            .append($("<option></option>")
+                            .attr("value", item.id)
+                            .text(item.member_name));
+                    });
+                    $('#users').val(memberId);
+                    $('#users').show();
+
+                    if (typeof onSuccessCallback == 'function') {
+                        onSuccessCallback();
+                    }
+                }
+            }
+        });
+    },
+
+    /**
+     *
+     * @param term -
+     *            the search term
+     * @param responseCallback -
+     *            a callback to handle response
+     */
+    fetchUsersWithFilter:function (request, responseCallback) {
+        $.ajax({
+            url:'php/get_users.php',
+            dataType:'text',
+            data:{
+                search_term:request.term
+            },
+            success:function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == BC_ERR) {
+                    alert("Fetch users failed - " + json.status.emessage);
+                    responseCallback(new Array());
+                } else {
+                    responseCallback(doc.data);
+                }
+            }
+        });
+    },
+
+    userChanged:function () {
+        $('#calendar').fullCalendar('render');
+        EventDialog.initShoesAndCourses();
+    }
+};
+/**
+ * General utils
+ */
+var Utils = {
+    /**
+     * Check if the incoming argument is Array
+     */
+    isArray:function (a) {
+        if (arguments.length != 1) {
+            return false;
+        }
+        return Object.prototype.toString.apply(a) === '[object Array]';
+    },
+
+    parseJSON:function (jsonStr) {
+        return $.browser.msie ? jsonParse($.trim(jsonStr)) : JSON.parse($.trim(jsonStr));
+    },
+
+    htmlEscape:function (s) {
+        return s.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/'/g, '&#039;')
+            .replace(/"/g, '&quot;')
+            .replace(/\n/g, '<br />');
+    }
+
+};
+/**
+ * A collection of <select> utility functions
+ */
+var SelectUtils = {
+
+    /**
+     * Add an option to the top and select it.(according to 'selected' which is
+     * boolean)
+     */
+    addOptionAtTopAndSelectIt:function (selectId, label, value, selected) {
+        if (arguments.length != 4) {
+            throw "Invalid number of arguments.";
+        }
+        if (typeof selectId != "string") {
+            throw "Invalid input type.";
+        }
+        var select = document.getElementById(selectId);
+        if (select == null) {
+            throw "Can not find element with id " + selectId;
+        }
+        // make sure it is a <select>
+        if (select.type.indexOf("select-") != 0) {
+            throw "Invalid input type.";
+        }
+        select.options[0] = new Option(label, value, selected);
+    },
+
+    /**
+     * Populate a <select> with JSON array:
+     *      'selectId' - the id of the select - String
+     *      'data' - a JSON array that looks like
+     *          [{"label":"Hi","value":12},{"label":"Hello","value": 19}]
+     *          The "title" attribute is supported as well but it is optional.
+     * extraDataFieldName - optional - name of an extra data field that is sent with the data
+     *      and should be applied to the options created
+     */
+    populateSelect:function (selectId, data, extraDataFieldName) {
+        if (arguments.length < 2) {
+            throw "Invalid number of arguments.";
+        }
+        if (typeof selectId != "string") {
+            throw "Invalid input type.";
+        }
+        if (!Utils.isArray(data)) {
+            throw "Invalid input type.";
+        }
+        var select = document.getElementById(selectId);
+        if (select == null) {
+            throw "Can not find element with id " + selectId;
+        }
+        // make sure it is a <select>
+        if (select.type.indexOf("select-") != 0) {
+            throw "Invalid input type.";
+        }
+        $.each(data, function (index, item) {
+            var option = new Option(item.label, item.value);
+            if (typeof item.title != 'undefined') {
+                option.title = item.title;
+            }
+            if (typeof extraDataFieldName != 'undefined' && typeof item[extraDataFieldName] != 'undefined') {
+                option.setAttribute(extraDataFieldName, item[extraDataFieldName]);
+            }
+            select.options[select.options.length] = option;
+        });
+    },
+
+    // resets the given <select> either by setting the selected index to be the first,
+    // or by clearing the entire options list
+    resetSelect:function (selectId, deleteOptions) {
+        if (arguments.length < 1) {
+            throw "Invalid number of arguments.";
+        }
+        if (typeof selectId != "string") {
+            throw "Invalid input type.";
+        }
+        var select = document.getElementById(selectId);
+        if (select == null) {
+            throw "Can not find element with id " + selectId;
+        }
+        // make sure it is a <select>
+        if (select.type.indexOf("select-") != 0) {
+            throw "Invalid input type.";
+        }
+
+        if (deleteOptions) {
+            select.options.length = 0;
+        }
+        else {
+            select.selectedIndex = 0;
+        }
+
+    },
+    /**
+     * Make a <select> entry selected according to the 'value' Return true if
+     * there is a match and false if there is no match
+     *
+     */
+    makeSelection:function (selectId, value) {
+        if (arguments.length != 2) {
+            throw "Invalid number of arguments.";
+        }
+        if (typeof selectId != "string") {
+            throw "Invalid input type.";
+        }
+        var select = document.getElementById(selectId);
+        if (select == null) {
+            throw "Can not find element with id " + selectId;
+        }
+        // make sure it is a <select>
+        if (select.type.indexOf("select-") != 0) {
+            throw "Invalid input type.";
+        }
+        for (var i = 0; i < select.length; i++) {
+            if (select.options[i].value == value) {
+                select.selectedIndex = i;
+                return true;
+            }
+        }
+        return false;
+    },
+    /**
+     * Get the selected value or null if there is no selected value
+     */
+    getSelectedValue:function (selectId) {
+        if (arguments.length != 1) {
+            throw "Invalid number of arguments.";
+        }
+        if (typeof selectId != "string") {
+            throw "Invalid input type.";
+        }
+        var select = document.getElementById(selectId);
+        if (select == null) {
+            throw "Can not find element with id " + selectId;
+        }
+        // make sure it is a <select>
+        if (select.type.indexOf("select-") != 0) {
+            throw "Invalid input type.";
+        }
+        return select.options.length > 0 ? select.options[select.selectedIndex].value
+            : null;
+    }
+};
+
+/**
+ * A collection of time related functions: validation,conversion,pace
+ * calculation
+ */
+
+var Time = {
+
+    monthNamesH: ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'],
+    dayNamesH: ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'],
+
+    jsDateToHebString: function(date) {
+        if (typeof date == 'undefined') {
+            return null;
+        }
+
+        var hebString = [];
+
+        hebString[hebString.length] = 'יום ';
+        hebString[hebString.length] = Time.dayNamesH[date.getDay()];
+        hebString[hebString.length] = ', ';
+//        hebString[hebString.length] = Time.jsDateToHebDate(date);
+        hebString[hebString.length] = date.getDate();
+        hebString[hebString.length] = ' ב';
+        hebString[hebString.length] = Time.monthNamesH[date.getMonth() +1];
+
+        return hebString.join('');
+    },
+
+    /**
+     * Validate that a distance (as a String) is in the range 0 - 99.9
+     */
+    validateDistance:function (distanceStr) {
+        if (arguments.length != 1) {
+            return false;
+        }
+        if (typeof distanceStr != "string") {
+            return false;
+        }
+        distanceStr = distanceStr.replace(/^\s+|\s+$/g, '');
+        var match = /^[-+]?[0-9]+(\.[0-9]+)?$/.test(distanceStr);
+        if (!match) {
+            return false;
+        }
+        var distance = parseFloat(distanceStr);
+        if (isNaN(distance)) {
+            return false;
+        }
+        return distance >= 0 && distance <= 99.9;
+
+    },
+
+    /**
+     * Calculate pace (min/km) based on distance (KM) and time(Seconds) Input
+     * arguments should be numbers representing distance and time
+     */
+    calculatePace:function (distanceInKM, timeInSeconds) {
+        if (arguments.length != 2) {
+            return null;
+        }
+        if (typeof distanceInKM == "string") {
+            distanceInKM = parseFloat(distanceInKM);
+        }
+        if (typeof timeInSeconds == "string") {
+            timeInSeconds = parseInt(timeInSeconds, 10);
+        }
+        if (distanceInKM <= 0 || timeInSeconds <= 0) {
+            return null;
+        }
+        var tmp = (timeInSeconds / 60) / distanceInKM;
+        var minutes = Math.floor(tmp);
+        var seconds = Math.round((tmp - minutes) * 60);
+        if (seconds == 60) {
+            minutes++;
+            seconds = 0;
+        }
+        return minutes + ":" + Time.paddWithZero(seconds);
+    },
+    /**
+     *
+     * @param seconds
+     */
+    convertSecondsToMMSS:function (seconds) {
+        if (arguments.length != 1) {
+            return null;
+        }
+        if (isNaN(parseInt(seconds))) {
+            return null;
+        }
+
+        var _minutes = Math.floor(seconds / 60);
+        var _seconds = seconds % 60;
+        return Time.paddWithZero(_minutes) + ":" + Time.paddWithZero(_seconds);
+    },
+    /**
+     *
+     */
+    convertSecondsToHMMSS:function (seconds) {
+        if (arguments.length != 1) {
+            return null;
+        }
+        if (isNaN(parseInt(seconds))) {
+            return null;
+        }
+
+        var _hours = Math.floor(seconds / 3600);
+        seconds = seconds - (_hours * 3600);
+        var tmp = Time.convertSecondsToMMSS(seconds);
+        return _hours + ":" + tmp;
+    },
+
+    paddWithZero:function paddWithZero(input) {
+        return input <= 9 ? "0" + input : input;
+    },
+    /**
+     *
+     * @param timeValue
+     * @returns {Boolean}
+     */
+    validateMMSS:function validateMMSS(timeValue) {
+        if (arguments.length != 1) {
+            return false;
+        }
+
+        var mmssRegExp = /^\d{2}:\d{2}$/; // mm:ss
+        var fragments = timeValue.match(mmssRegExp);
+        if (fragments != null) {
+            var value = fragments[0];
+
+            var minutesToSecondsColonIndex = 2;
+
+            var minutesStr = value.substring(0, minutesToSecondsColonIndex);
+            var secStr = value.substring(minutesToSecondsColonIndex + 1,
+                value.length);
+
+            var minutes = parseInt(minutesStr);
+            var seconds = parseInt(secStr);
+
+            if (minutes < 0 || minutes > 59) {
+                return false;
+            }
+            if (seconds < 0 || seconds > 59) {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
+
+        return true;
+
+    },
+    /**
+     *
+     */
+    validateHMMSS:function (timeValue) {
+        if (arguments.length != 1) {
+            return false;
+        }
+
+        var hmmssRegExp = /^\d{1}:\d{2}:\d{2}$/; // h:mm:ss
+        var fragments = timeValue.match(hmmssRegExp);
+        if (fragments != null) {
+            var value = fragments[0];
+
+            var hoursToMinutesColonIndex = 1;
+            var minutesToSecondsColonIndex = 4;
+
+            var hourStr = value.substring(0, hoursToMinutesColonIndex);
+            var minutesStr = value.substring(hoursToMinutesColonIndex + 1,
+                minutesToSecondsColonIndex);
+            var secStr = value.substring(minutesToSecondsColonIndex + 1,
+                value.length);
+
+            var hour = parseInt(hourStr);
+            var minutes = parseInt(minutesStr);
+            var seconds = parseInt(secStr);
+
+            if (hour < 0 || hour > 9) {
+                return false;
+            }
+            if (minutes < 0 || minutes > 59) {
+                return false;
+            }
+            if (seconds < 0 || seconds > 59) {
+                return false;
+            }
+
+        } else {
+            return;
+        }
+        return true;
+    },
+    /**
+     *
+     */
+    convertHMMSSToSeconds:function (timeValue) {
+        var valid = Time.validateHMMSS(timeValue);
+        if (!valid) {
+            return null;
+        }
+
+        var timeValueArray = timeValue.split(':');
+        if (timeValueArray.length < 3) {
+            return null;
+        }
+
+        var hour = parseInt(timeValueArray[0], 10);
+        var minutes = parseInt(timeValueArray[1], 10);
+        var seconds = parseInt(timeValueArray[2], 10);
+
+        return hour * 3600 + minutes * 60 + seconds;
+    },
+    /**
+     *
+     */
+    convertMMSSToSeconds:function (timeValue) {
+        var valid = Time.validateMMSS(timeValue);
+        if (!valid) {
+            return null;
+        }
+        var timeValueArray = timeValue.split(':');
+        if (timeValueArray < 2) {
+            return null;
+        }
+
+        var minutes = parseInt(timeValueArray[0], 10);
+        var seconds = parseInt(timeValueArray[1], 10);
+        return minutes * 60 + seconds;
+    },
+
+    sqlDateToJsDate:function (sqlDate) {
+        if (typeof sqlDate != 'string') {
+            return null;
+        }
+
+        var sqlDateArray = sqlDate.split(' ');
+        if (sqlDateArray.length < 2) {
+            return null;
+        }
+
+        sqlDateArray = sqlDateArray[0].split('-');
+        if (sqlDateArray.length < 3) {
+            return null;
+        }
+
+        var year = sqlDateArray[0];
+        var month = sqlDateArray[1];
+        var day = sqlDateArray[2];
+        if (isNaN(parseInt(year)) || isNaN(parseInt(month)) || isNaN(parseInt(day))) {
+            return null;
+        }
+
+        return new Date(year, month - 1, day);
+    },
+
+    jsDateToHebDate:function (date) {
+        if (typeof date != 'object') {
+            return null;
+        }
+
+        var day = date.getDate();
+        var month = date.getMonth() + 1; //Months are zero based
+        var year = date.getFullYear();
+
+        return day + '/' + month + '/' + year;
+    },
+
+    hebDateToSqlDate:function (hebDate) {
+        if (typeof hebDate != 'string') {
+            return null;
+        }
+
+        var hebDateArray = hebDate.split('/');
+        if (hebDateArray.length < 3) {
+            return null;
+        }
+
+        var year = hebDateArray[2];
+        var month = hebDateArray[1];
+        var day = hebDateArray[0];
+        if (isNaN(parseInt(year)) || isNaN(parseInt(month)) || isNaN(parseInt(day))) {
+            return null;
+        }
+
+        return year + '-' + month + '-' + day + ' 00:00:00';
+    }
+
+};

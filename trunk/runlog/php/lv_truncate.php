@@ -8,7 +8,7 @@
  * Truncates the tl_logger table
  *
  */
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 try {
 	$conn = getConnection();

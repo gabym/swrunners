@@ -4,7 +4,7 @@
  *
  * Update existing user course - fields that can be changed: name,length,description
  */
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 require_once 'course_common.php';
 
 //

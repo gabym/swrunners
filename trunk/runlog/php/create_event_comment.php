@@ -1,6 +1,6 @@
 <?php
 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 function getEventComment() {
     if (!isset ($_GET['event_comment'])) {

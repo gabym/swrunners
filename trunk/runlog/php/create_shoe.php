@@ -12,7 +12,7 @@
  * 
  */
  
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 require_once 'shoe_common.php';
 
 $runner_id = $memberAuthentication->getMemberId();

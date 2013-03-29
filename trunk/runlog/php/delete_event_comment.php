@@ -1,6 +1,6 @@
 <?php
 
-require_once 'bc_ajax_page_init.php';
+require_once 'ajax_page_init.php';
 
 $eventCommentId = $_GET['event_comment_id'];
 $validationResult = validatePositiveInt($eventCommentId);

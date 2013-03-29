@@ -38,7 +38,7 @@ if ($isPostback)
     }
 }
 
-require_once 'php/bc_html_page_init.php';
+require_once 'php/html_page_init.php';
 ?>
 <!DOCTYPE HTML>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />

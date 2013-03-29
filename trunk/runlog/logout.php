@@ -1,6 +1,6 @@
 <?php
 
-require_once 'php/bc_html_page_init.php';
+require_once 'php/html_page_init.php';
 
 $memberAuthentication = new memberAuthentication();
 $memberAuthentication->logout();

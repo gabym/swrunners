@@ -31,5 +31,5 @@
 	define('MIN_COOLDOWN_TIME', 0);
 	define('MAX_COOLDOWN_TIME', 3599);
 
-	define('JS_VERSION', 10);
+	define('JS_VERSION', 11);
 	define('CSS_VERSION', 2);

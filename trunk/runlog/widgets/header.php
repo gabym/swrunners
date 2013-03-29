@@ -12,9 +12,9 @@
 }
 </style>
 <![endif]-->
-<div id="bc_header">
-    <div id="bc_header_graphics">
-        <div id="bc_title">מעקב אימונים</div>
+<div id="header">
+    <div id="header_graphics">
+        <div id="title">מעקב אימונים</div>
         <div id='content' style="display:none;">
             <a id="logout" href="logout.php">התנתק</a>
             <div id="tabs">

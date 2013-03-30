@@ -12,7 +12,7 @@ $runnerId = $memberAuthentication->getMemberId();
 
 try {
     $conn = getConnection();
-    $count = $conn->exec("DELETE FROM tl_event_comments where id = '" . $eventCommentId . "' AND runner_id = '" . $runnerId . "'");
+    $count = $conn->exec("DELETE FROM tl_comments where id = '" . $eventCommentId . "' AND runner_id = '" . $runnerId . "'");
     if($count != 1) {
         // we have a problem here - only 1 record should be deleted
         echo getErrorStatus("Expecting 1 record to be deleted. However . $count . were deleted.");

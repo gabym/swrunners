@@ -22,7 +22,7 @@ $eventComment = getEventComment();
 
 try {
     $conn = getConnection();
-    $sql = 'INSERT INTO tl_event_comments (event_id,runner_id,comment) VALUES (:event_id,:runner_id,:comment)';
+    $sql = 'INSERT INTO tl_comments (event_id,runner_id,comment) VALUES (:event_id,:runner_id,:comment)';
     $sth = $conn->prepare($sql);
     $ok = $sth->execute(array (
         ':event_id' => $eventComment-> {"event_id" },

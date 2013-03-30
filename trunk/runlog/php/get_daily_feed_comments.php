@@ -19,7 +19,7 @@ function getDayEventCommentsAsJSON($conn, $date) {
     $sql =
 
 "SELECT events.id AS event_id, comments.id AS comment_id, comments.runner_id, runners.member_name as 'commenter_name', COALESCE(comments.comment, '') AS comment
- FROM tl_events events, tl_event_comments comments, tl_runners runners
+ FROM tl_events events, tl_comments comments, tl_runners runners
  WHERE events.run_date = '".$date."'
     AND events.id = comments.event_id
     AND comments.runner_id = runners.id

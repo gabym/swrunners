@@ -179,7 +179,7 @@ function showNewComments(){
 
                 for (var i in doc.data['comments']){
                     var comment = doc.data['comments'][i];
-                    Comments.appendComment(comment);
+                    Comments.appendComment(comment, gTeamCommentsLastFetched);
                 }
 
                 $.ajax({

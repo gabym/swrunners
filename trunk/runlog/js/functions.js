@@ -687,14 +687,22 @@ var Comments = {
         $('#event_new_comment_'+event.id).elastic().keypress(Comments.onCommentKeyPress);
     },
 
-    appendComment: function (comment) {
+    appendComment: function (comment, lastFetchedTimestamp) {
         var eventComments = $('#event_comments_' + comment.event_id);
         if (!eventComments.is(':empty')) {
             eventComments.append('<div class="separator"></div>');
         }
         eventComments.parent().addClass('comments_on');
+
+        var commentCssClass = 'comment';
+        if (lastFetchedTimestamp &&
+            comment.timestamp &&
+            (Time.sqlDateToJsDateTime(comment.timestamp).getTime() >=  Time.sqlDateToJsDateTime(lastFetchedTimestamp).getTime())){
+            commentCssClass += ' new_comment';
+        }
+
         var commentHtml =
-            '<div class="comment" id="event_comment_' + comment.comment_id + '">' +
+            '<div class="' + commentCssClass + '" id="event_comment_' + comment.comment_id + '">' +
             '   <b>' + comment.commenter_name + '</b>: ' + comment.comment +
             (comment.commenter_name == gMemberName ? '  <a class="remove_btn" href="#" onclick="Comments.removeComment(\'' + comment.event_id + '\', \'' + comment.comment_id + '\'); return false;">x</a>' : '') +
             '</div>';
@@ -1275,6 +1283,37 @@ var Time = {
         }
 
         return new Date(year, month - 1, day);
+    },
+
+    sqlDateToJsDateTime: function (sqlDate) {
+        var sqlDateTime = Time.sqlDateToJsDate(sqlDate);
+
+        if (sqlDateTime == null){
+            return null;
+        }
+
+        var sqlTimeArray = sqlDate.split(' ');
+        if (sqlTimeArray.length < 2) {
+            return null;
+        }
+
+        sqlTimeArray = sqlTimeArray[1].split(':');
+        if (sqlTimeArray.length < 3) {
+            return null;
+        }
+
+        var hour = sqlTimeArray[0];
+        var minute = sqlTimeArray[1];
+        var second = sqlTimeArray[2];
+        if (isNaN(parseInt(hour)) || isNaN(parseInt(minute)) || isNaN(parseInt(second))) {
+            return null;
+        }
+
+        sqlDateTime.setHours(hour);
+        sqlDateTime.setMinutes(minute);
+        sqlDateTime.setSeconds(second);
+
+        return sqlDateTime;
     },
 
     jsDateToHebDate:function (date) {

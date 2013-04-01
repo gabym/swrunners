@@ -159,7 +159,7 @@ function showNewComments(){
         url: 'php/get_team_new_comments.php',
         dataType: 'text',
         data: {
-            $timestamp: gTeamCommentsLastFetched
+            timestamp: gTeamCommentsLastFetched
         },
         success: function (txt) {
             var doc = Utils.parseJSON(txt);

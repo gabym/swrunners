@@ -1045,7 +1045,7 @@ var Time = {
 //        hebString[hebString.length] = Time.jsDateToHebDate(date);
         hebString[hebString.length] = date.getDate();
         hebString[hebString.length] = ' ב';
-        hebString[hebString.length] = Time.monthNamesH[date.getMonth() +1];
+        hebString[hebString.length] = Time.monthNamesH[date.getMonth()];
 
         return hebString.join('');
     },

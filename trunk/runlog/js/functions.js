@@ -678,7 +678,7 @@ var Comments = {
                 '       <div class="event_title">' + Calendar.getFeedEventHtml(event) + '</div>' +
                 '   </div>' +
                 '   <div class="comments">' +
-                '       <div id="event_comments_' + event.id + '"></div>' +
+                '       <div id="event_comments_' + event.id + '" class="list"></div>' +
                 '       <div><textarea id="event_new_comment_' + event.id + '" class="event_new_comment" placeholder="הוספת פרגון..."></textarea></div>' +
                 '   </div>' +
                 '</div>';

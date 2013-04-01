@@ -300,10 +300,18 @@ table.tablesorter .active_col {
     background-color: #cccccc;
 }
 
+#feed .event .comments_on .list {
+    margin-bottom: 4px;
+}
+
 #feed .event .comments .comment {
     position: relative;
-    padding: 5px;
-    width: 315px;
+    padding: 5px 5px 5px 20px;
+    width: 327px;
+}
+
+#feed .event .comments .new_comment {
+    background-color: #fff4c0;
 }
 
 #feed .event .comments .comment .remove_btn {

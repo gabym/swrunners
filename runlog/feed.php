@@ -53,34 +53,19 @@ function getDayEvents()
             }
             else {
                 feed.append('<div class="day_header">'+Time.jsDateToHebString(day)+'</div>');
-                if (doc.data.length == 0) {
+                if (doc.data['events'].length == 0) {
                     feed.append('<div class="event">אין נתונים ליום זה</div>');
                 }
                 else {
-                    for (var i in doc.data) {
-                        var event = doc.data[i];
+                    for (var i in doc.data['events']) {
+                        var event = doc.data['events'][i];
                         Comments.appendEvent(feed, event);
                     }
 
-                    $.ajax({
-                        url: 'php/get_daily_feed_comments.php',
-                        dataType: 'text',
-                        data: {
-                            date: Time.hebDateToSqlDate(Time.jsDateToHebDate(day))
-                        },
-                        success: function(txt){
-                            var doc = Utils.parseJSON(txt);
-                            if (doc.status.ecode == STATUS_ERR) {
-                                alert("Fetch events failed - " + doc.status.emessage);
-                            }
-                            else {
-                                for (var i in doc.data) {
-                                    var comment = doc.data[i];
-                                    Comments.appendComment(comment);
-                                }
-                            }
-                        }
-                    });
+                    for (var i in doc.data['comments']){
+                        var comment = doc.data['comments'][i];
+                        Comments.appendComment(comment);
+                    }
                 }
             }
 

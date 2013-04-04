@@ -43,6 +43,8 @@ try {
         echo returnDeleteEvenJsonSuccess();
     }
 
+    $conn->exec("DELETE FROM tl_comments where event_id = '" . $event_id . "'");
+
     $conn = null;
 }
 catch(PDOException $e) {

@@ -679,7 +679,7 @@ var Comments = {
                 '   </div>' +
                 '   <div class="comments">' +
                 '       <div id="event_comments_' + event.id + '" class="list"></div>' +
-                '       <div><textarea id="event_new_comment_' + event.id + '" class="event_new_comment" placeholder="הוספת פרגון..." maxlength="255"></textarea></div>' +
+                '       <div><textarea id="event_new_comment_' + event.id + '" class="event_new_comment" placeholder="הוספת פרגון..." maxlength="511"></textarea></div>' +
                 '   </div>' +
                 '</div>';
 

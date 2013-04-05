@@ -22,192 +22,196 @@ require_once 'php/html_page_init.php';
 
 <script type="text/javascript">
 
-var gMemberName = "<?php echo $memberAuthentication->getMemberName(); ?>";
-var gTeamCommentsLastFetched = null;
-var gCountNewTeamComments = 0;
+    var gMemberName = "<?php echo $memberAuthentication->getMemberName(); ?>";
+    var gTeamCommentsLastFetched = null;
+    var gCountNewTeamComments = 0;
 
-if (jQuery.browser.msie && jQuery.browser.version.indexOf("8.") == 0) {
-    if (typeof JSON !== 'undefined') {
-        JSON.parse = null;
+    if (jQuery.browser.msie && jQuery.browser.version.indexOf("8.") == 0) {
+        if (typeof JSON !== 'undefined') {
+            JSON.parse = null;
+        }
     }
-}
 
-function getDayEvents()
-{
-    if (feedQueueLock) {
-        return;
-    }
-    feedQueueLock = true;
+    function getDayEvents()
+    {
+        if (feedQueueLock) {
+            return;
+        }
+        feedQueueLock = true;
 
-    var day = feedQueue.shift();
-    $.ajax({
-        url: 'php/get_daily_feed.php',
-        dataType: 'text',
-        data: {
-            date: Time.hebDateToSqlDate(Time.jsDateToHebDate(day))
-        },
-        success: function (txt) {
-            var doc = Utils.parseJSON(txt);
-            if (doc.status.ecode == STATUS_ERR) {
-                alert("Fetch events failed - " + doc.status.emessage);
-            }
-            else {
-                feed.append('<div class="day_header">'+Time.jsDateToHebString(day)+'</div>');
-                if (doc.data['events'].length == 0) {
-                    feed.append('<div class="event">אין נתונים ליום זה</div>');
+        var day = feedQueue.shift();
+        $.ajax({
+            url: 'php/get_daily_feed.php',
+            dataType: 'text',
+            data: {
+                date: Time.hebDateToSqlDate(Time.jsDateToHebDate(day))
+            },
+            success: function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == STATUS_ERR) {
+                    alert("Fetch events failed - " + doc.status.emessage);
                 }
                 else {
-                    for (var i in doc.data['events']) {
+                    feed.append('<div class="day_header">'+Time.jsDateToHebString(day)+'</div>');
+                    var $dayEvents = $('<div class="day_events"></div>');
+                    feed.append($dayEvents);
+                    if (doc.data['events'].length == 0) {
+                        $dayEvents.append('<div class="event">אין נתונים ליום זה</div>');
+                    }
+                    else {
+                        for (var i in doc.data['events']) {
+                            var event = doc.data['events'][i];
+                            Comments.appendEvent($dayEvents, event);
+                        }
+
+                        for (var i in doc.data['comments']){
+                            var comment = doc.data['comments'][i];
+                            Comments.appendComment(comment);
+                        }
+                    }
+                }
+
+                feedQueueLock = false;
+                if (feedQueue.length > 0) {
+                    getDayEvents();
+                }
+                else {
+                    onFeedScroll();
+                }
+            }
+        });
+    }
+
+    function getNextDayEvents()
+    {
+        date.setDate(date.getDate() -1);
+        feedQueue.push(new Date(date));
+        getDayEvents();
+    }
+
+    function onFeedScroll()
+    {
+        if (feedQueueLock) {
+            return;
+        }
+
+        if ($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
+            getNextDayEvents();
+        }
+    }
+
+    function getTeamCommentsStatus(){
+        $.ajax({
+            url: 'php/get_team_comments_status.php',
+            dataType: 'text',
+            success: function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == STATUS_ERR) {
+                    alert("get team comments status - " + doc.status.emessage);
+                }
+                else {
+                    gTeamCommentsLastFetched = doc.data['last_fetched'];
+                    gCountNewTeamComments = doc.data['count_new_comments'];
+                    showActionLink();
+                }
+            }
+        });
+    }
+
+    function showActionLink(){
+        if (gCountNewTeamComments > 0){
+            $('#show_new_comments_action').show();
+        }
+        else {
+            $('#no_new_comments_action').show();
+        }
+    }
+
+    function hideActionLink(){
+        $('#show_new_comments_action').hide();
+        $('#no_new_comments_action').hide();
+    }
+
+    function showNewComments(){
+        $('#team_events_header').hide();
+        $('#show_new_comments_action').hide();
+        hideActionLink();
+
+        $('#new_comments_header').show();
+        $('#show_all_events_label').show();
+        $(window).unbind('scroll');
+
+        feed.empty();
+        $.ajax({
+            url: 'php/get_team_new_comments.php',
+            dataType: 'text',
+            data: {
+                timestamp: gTeamCommentsLastFetched
+            },
+            success: function (txt) {
+                var doc = Utils.parseJSON(txt);
+                if (doc.status.ecode == STATUS_ERR) {
+                    alert("get team new comments - " + doc.status.emessage);
+                }
+                else {
+                    var runDate = null;
+                    for (var i in doc.data['events']){
                         var event = doc.data['events'][i];
-                        Comments.appendEvent(feed, event);
+                        if (event['run_date'] != runDate){
+                            runDate = event['run_date'];
+                            feed.append('<div class="day_header">'+Time.jsDateToHebString(Time.sqlDateToJsDate(runDate))+'</div>');
+                            var $dayEvents = $('<div class="day_events"></div>');
+                            feed.append($dayEvents);
+                        }
+                        Comments.appendEvent($dayEvents, event);
                     }
 
                     for (var i in doc.data['comments']){
                         var comment = doc.data['comments'][i];
-                        Comments.appendComment(comment);
+                        Comments.appendComment(comment, gTeamCommentsLastFetched);
                     }
+
+                    $.ajax({
+                        url: 'php/update_team_comments_last_fetched.php',
+                        dataType: 'text'
+                    });
                 }
             }
-
-            feedQueueLock = false;
-            if (feedQueue.length > 0) {
-                getDayEvents();
-            }
-            else {
-                onFeedScroll();
-            }
-        }
-    });
-}
-
-function getNextDayEvents()
-{
-    date.setDate(date.getDate() -1);
-    feedQueue.push(new Date(date));
-    getDayEvents();
-}
-
-function onFeedScroll()
-{
-    if (feedQueueLock) {
-        return;
+        });
     }
 
-    if ($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
-        getNextDayEvents();
-    }
-}
-
-function getTeamCommentsStatus(){
-    $.ajax({
-        url: 'php/get_team_comments_status.php',
-        dataType: 'text',
-        success: function (txt) {
-            var doc = Utils.parseJSON(txt);
-            if (doc.status.ecode == STATUS_ERR) {
-                alert("get team comments status - " + doc.status.emessage);
-            }
-            else {
-                gTeamCommentsLastFetched = doc.data['last_fetched'];
-                gCountNewTeamComments = doc.data['count_new_comments'];
-                showActionLink();
-            }
-        }
-    });
-}
-
-function showActionLink(){
-    if (gCountNewTeamComments > 0){
+    function showAllComments(){
+        $('#team_events_header').show();
         $('#show_new_comments_action').show();
+        showActionLink();
+
+        $('#new_comments_header').hide();
+        $('#show_all_events_label').hide();
+        $(window).scroll(onFeedScroll);
+
+        feed.empty();
+        feedQueue = [];
+        feedQueueLock = false;
+        date = new Date();
+        feedQueue.push(new Date(date));
+        getDayEvents();
     }
-    else {
-        $('#no_new_comments_action').show();
+
+    function init()
+    {
+        $(window).scroll(onFeedScroll);
+        feedQueue = [];
+        feedQueueLock = false;
+        feed = $('#feed');
+        date = new Date();
+        feedQueue.push(new Date(date));
+        getDayEvents();
+        getTeamCommentsStatus();
     }
-}
 
-function hideActionLink(){
-    $('#show_new_comments_action').hide();
-    $('#no_new_comments_action').hide();
-}
-
-function showNewComments(){
-    $('#team_events_header').hide();
-    $('#show_new_comments_action').hide();
-    hideActionLink();
-
-    $('#new_comments_header').show();
-    $('#show_all_events_label').show();
-    $(window).unbind('scroll');
-
-    feed.empty();
-    $.ajax({
-        url: 'php/get_team_new_comments.php',
-        dataType: 'text',
-        data: {
-            timestamp: gTeamCommentsLastFetched
-        },
-        success: function (txt) {
-            var doc = Utils.parseJSON(txt);
-            if (doc.status.ecode == STATUS_ERR) {
-                alert("get team new comments - " + doc.status.emessage);
-            }
-            else {
-                var runDate = null;
-                for (var i in doc.data['events']){
-                    var event = doc.data['events'][i];
-                    if (event['run_date'] != runDate){
-                        runDate = event['run_date'];
-                        feed.append('<div class="day_header">'+Time.jsDateToHebString(Time.sqlDateToJsDate(runDate))+'</div>');
-                    }
-                    Comments.appendEvent(feed, event);
-                }
-
-                for (var i in doc.data['comments']){
-                    var comment = doc.data['comments'][i];
-                    Comments.appendComment(comment, gTeamCommentsLastFetched);
-                }
-
-                $.ajax({
-                    url: 'php/update_team_comments_last_fetched.php',
-                    dataType: 'text'
-                });
-            }
-        }
+    $(document).ready(function () {
+        init();
     });
-}
-
-function showAllComments(){
-    $('#team_events_header').show();
-    $('#show_new_comments_action').show();
-    showActionLink();
-
-    $('#new_comments_header').hide();
-    $('#show_all_events_label').hide();
-    $(window).scroll(onFeedScroll);
-
-    feed.empty();
-    feedQueue = [];
-    feedQueueLock = false;
-    date = new Date();
-    feedQueue.push(new Date(date));
-    getDayEvents();
-}
-
-function init()
-{
-    $(window).scroll(onFeedScroll);
-    feedQueue = [];
-    feedQueueLock = false;
-    feed = $('#feed');
-    date = new Date();
-    feedQueue.push(new Date(date));
-    getDayEvents();
-    getTeamCommentsStatus();
-}
-
-$(document).ready(function () {
-    init();
-});
 </script>
 
 <style>
@@ -228,7 +232,7 @@ $(document).ready(function () {
     }
 
     #feed .day_header {
-        margin: 25px 0;
+        margin: 20px 0;
         padding: 4px 5px;
         font-size: 14px;
         background-color: #deecf5;

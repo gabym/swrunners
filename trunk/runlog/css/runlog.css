@@ -265,22 +265,30 @@ table.tablesorter .active_col {
 }
 
 /* Comments */
-#feed .event {
-    margin: 25px 0;
+#feed .day_events .event:last-child {
+    padding: 0;
+    border: none;
+}
+
+#feed .day_events .event {
+    margin: 20px 0;
+    width: 100%;
+    padding-bottom: 14px;
+    border-bottom: solid 1px #e5e5e5;
     display: table;
 }
 
-#feed .event .event_type {
+#feed .day_events .event .event_type {
     width: 10px;
     display: table-cell;
 }
 
-#feed .event .event_title {
+#feed .day_events .event .event_title {
     padding: 0 5px;
     display: table-cell;
 }
 
-#feed .event .comments {
+#feed .day_events .event .comments {
     margin-top: 4px;
     padding-top: 5px;
     padding-bottom: 5px;
@@ -288,33 +296,36 @@ table.tablesorter .active_col {
     font-size: 11px;
 }
 
-#feed .event .comments_on {
+#feed .day_events .event .comments_on {
+    margin-top: 13px;
+    margin-right: 17px;
     padding: 5px;
     background-color: #f0f0f0;
+    border-radius: 3px;
 }
 
-#feed .event .comments .separator {
+#feed .day_events .event .comments .separator {
     margin: 0 2px;
     height: 1px;
     overflow: hidden;
     background-color: #cccccc;
 }
 
-#feed .event .comments_on .list {
+#feed .day_events .event .comments_on .list {
     margin-bottom: 4px;
 }
 
-#feed .event .comments .comment {
+#feed .day_events .event .comments .comment {
     position: relative;
     padding: 5px 5px 5px 20px;
     width: 327px;
 }
 
-#feed .event .comments .new_comment {
+#feed .day_events .event .comments .new_comment {
     background-color: #fff4c0;
 }
 
-#feed .event .comments .comment .remove_btn {
+#feed .day_events .event .comments .comment .remove_btn {
     position: absolute;
     top: 7px;
     right: 337px;
@@ -326,13 +337,13 @@ table.tablesorter .active_col {
     display: block;
 }
 
-#feed .event .comments .comment .remove_btn:hover {
+#feed .day_events .event .comments .comment .remove_btn:hover {
     background-color: #ccdae3;
     color: #45423c;
     border-radius: 3px;
 }
 
-#feed .event .comments .event_new_comment {
+#feed .day_events .event .comments .event_new_comment {
     width: 345px;
     height: 16px;
     padding: 0 3px;

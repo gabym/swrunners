@@ -700,6 +700,9 @@ var Comments = {
             (Time.sqlDateToJsDateTime(comment.timestamp).getTime() >=  Time.sqlDateToJsDateTime(lastFetchedTimestamp).getTime())){
             commentCssClass += ' new_comment';
         }
+        else if (eventComments.find('.comment:last').hasClass('new_comment')){
+            commentCssClass += ' new_comment';
+        }
 
         var commentHtml =
             '<div class="' + commentCssClass + '" id="event_comment_' + comment.comment_id + '">' +

@@ -12,7 +12,7 @@ try {
     $teamCommentsLastFetchedByRunner = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (count($teamCommentsLastFetchedByRunner) == 0){
-        // never viewed new comments before - show comments from the last 24 hrs
+        // never viewed new comments before - show comments from the last 48 hrs
         $timestamp = date("Y-m-d H:i:s", strtotime('-2 day'));
         $teamCommentsLastFetchedByRunner = array(
             0 => array(

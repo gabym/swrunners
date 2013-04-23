@@ -85,6 +85,11 @@ function openShoeDialog(shoeName, shoeStartUsingDate, shoeType, shoeId)
     {
         var dialogTitle = 'ערוך פרטי נעל';
     }
+
+    if (shoeStartUsingDate == null || shoeStartUsingDate == ''){
+        shoeStartUsingDate = Time.jsDateToHebDate(new Date());
+    }
+
     $('#shoe_name').val(shoeName);
     $('#datepicker').val(shoeStartUsingDate);
     $('#type').val(shoeType);
@@ -115,9 +120,13 @@ function updateShoeIsActive(shoeId, isActive)
 }
 
 function getShoe() {
+    var startUsingDate = Time.hebDateToSqlDate($('#datepicker').val());
+    if (startUsingDate == null || startUsingDate == '') {
+        startUsingDate = Time.hebDateToSqlDate(Time.jsDateToHebDate(new Date()));
+    }
 	var shoe = {
 	    shoe_name : $('#shoe_name').val(),
-        start_using_date : Time.hebDateToSqlDate($('#datepicker').val()),
+        start_using_date : startUsingDate,
         type : $('#type').val(),
         shoe_id : $('#shoe_id').val()
     };

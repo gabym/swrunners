@@ -30,11 +30,11 @@ function getDayEventsAsJSON($conn, $date) {
     $sql =
 
 "SELECT events.id AS event_id, comments.id AS comment_id, comments.runner_id, runners.member_name as 'commenter_name', COALESCE(comments.comment, '') AS comment
- FROM tl_events events
- JOIN tl_comments comments ON events.id = comments.event_id
- JOIN tl_runners runners ON comments.runner_id = runners.id
- WHERE events.run_date = '".$date."'
- ORDER BY events.id DESC, comments.id ASC";
+     FROM tl_events events
+     JOIN tl_comments comments ON events.id = comments.event_id
+     JOIN tl_runners runners ON comments.runner_id = runners.id
+     WHERE events.run_date = '".$date."'
+     ORDER BY events.id DESC, comments.id ASC";
 
     $stmt = $conn->query($sql);
     $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);

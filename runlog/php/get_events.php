@@ -35,7 +35,16 @@ catch(PDOException $e) {
 
 // Fetch the events info from DB as JSON
 function getEventsAsJSON($conn,$member_id, $start_date, $end_date) {
-    $sql = "SELECT tl_events.id as id, tl_run_types.type, run_distance, run_time, warmup_distance, cooldown_distance, COALESCE(notes, '') AS notes, run_date AS start, runner_id, tl_run_types.id as run_type_id FROM tl_events, tl_run_types WHERE tl_run_types.id = tl_events.run_type_id and runner_id = '" . $member_id . "' and run_date >= '" . $start_date . "' and run_date <= '" . $end_date . "' ORDER BY run_date";
+    $sql =
+
+"SELECT tl_events.id as id, tl_run_types.type, run_distance, run_time, warmup_distance, cooldown_distance, COALESCE(notes, '') AS notes, run_date AS start, runner_id, tl_run_types.id as run_type_id
+    FROM tl_events, tl_run_types
+    WHERE tl_run_types.id = tl_events.run_type_id
+        AND runner_id = '" . $member_id . "'
+        AND run_date >= '" . $start_date . "'
+        AND run_date <= '" . $end_date . "'
+    ORDER BY run_date";
+
     $stmt = $conn->query($sql);
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

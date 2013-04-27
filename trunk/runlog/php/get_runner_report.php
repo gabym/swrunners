@@ -21,7 +21,15 @@ catch (PDOException $e) {
 
 //$data [] = Array ("Name", $result[0]['member_name'], "Weekly sessions");
 
-$sql = "SELECT  notes, run_date, run_type_id, (SELECT tl_run_types.type FROM tl_run_types where tl_run_types.id=tl_events.run_type_id) as type, run_distance + warmup_distance + cooldown_distance as sumk  FROM  tl_events WHERE (runner_id = '" . $runner_id . "' AND run_date >= '" . $_GET['start_date'] . "' AND run_date <= '" . $_GET['end_date'] . "')";
+$sql =
+
+"SELECT notes, run_date, run_type_id, (SELECT tl_run_types.type FROM tl_run_types WHERE tl_run_types.id=tl_events.run_type_id) AS type, run_distance + warmup_distance + cooldown_distance AS sumk
+    FROM tl_events
+    WHERE (runner_id = '" . $runner_id . "'
+        AND run_date >= '" . $_GET['start_date'] . "'
+        AND run_date <= '" . $_GET['end_date'] . "')
+    ORDER BY run_date DESC, id DESC";
+
 $sth = $conn->prepare($sql, array(
     PDO :: ATTR_CURSOR => PDO :: CURSOR_FWDONLY
 ));

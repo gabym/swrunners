@@ -19,7 +19,7 @@ try {
         AND tl_comments.runner_id != '" . $runnerId . "'
         AND tl_comments.timestamp >= '" . $timestamp . "'
         AND tl_events.id = tl_comments.event_id
-    ORDER BY tl_events.id DESC";
+    ORDER BY tl_events.run_date DESC, tl_events.id DESC";
 
     $stmt = $conn->query($sql);
     $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -32,11 +32,11 @@ try {
     $sql =
 
 "SELECT events.id AS event_id, comments.id AS comment_id, comments.runner_id, runners.member_name AS 'commenter_name', COALESCE(comments.comment, '') AS comment, comments.timestamp AS timestamp
- FROM tl_events events
-    JOIN tl_comments comments ON events.id=comments.event_id
-    JOIN tl_runners runners ON comments.runner_id = runners.id
- WHERE events.id IN (".implode(',', $eventIds).")
- ORDER BY events.id DESC, comments.id ASC";
+     FROM tl_events events
+        JOIN tl_comments comments ON events.id=comments.event_id
+        JOIN tl_runners runners ON comments.runner_id = runners.id
+     WHERE events.id IN (".implode(',', $eventIds).")
+     ORDER BY events.run_date DESC, events.id DESC, comments.id ASC";
 
     $stmt = $conn->query($sql);
     $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -53,6 +53,7 @@ var EventTypes  = {
 	FARTLAK_RUN : 7,
 	RACE_RUN : 8,
 	OTHER_SPORT : 9,
+	REST_DAY : 11,
 	EVENT_CANCELED : 10
 }
 
@@ -67,5 +68,6 @@ EVENT_TYPES_ATTRIBUTES[EventTypes.LONG_RUN]            = new EventTypeAttributes
 EVENT_TYPES_ATTRIBUTES[EventTypes.RECOVERY_RUN]        = new EventTypeAttributes("#ffffff","#e0e0e0","ריצת התאוששות");
 EVENT_TYPES_ATTRIBUTES[EventTypes.MEDUIM_PACE_RUN]     = new EventTypeAttributes("#ffffff","#e0e0e0","ריצת קצב בינוני");
 EVENT_TYPES_ATTRIBUTES[EventTypes.OTHER_SPORT]         = new EventTypeAttributes("#ffffff","#e0e0e0","ספורט אחר");
+EVENT_TYPES_ATTRIBUTES[EventTypes.REST_DAY]            = new EventTypeAttributes("#ffffff","#e0e0e0","יום מנוחה");
 EVENT_TYPES_ATTRIBUTES[EventTypes.EVENT_CANCELED]      = new EventTypeAttributes("#ebebeb","#e0e0e0","אימון שבוטל");
 

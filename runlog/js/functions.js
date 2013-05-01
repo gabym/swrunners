@@ -339,7 +339,7 @@ var EventFormatter = {
     getTotalDistance:function (warmupDistance, runDistance, cooldownDistance, runTypeId) {
 
         var totalDistance = parseFloat(warmupDistance) + parseFloat(runDistance) + parseFloat(cooldownDistance);
-        if (totalDistance == NaN || totalDistance == 0 || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.EVENT_CANCELED) {
+        if (totalDistance == NaN || totalDistance == 0 || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.REST_DAY || runTypeId == EventTypes.EVENT_CANCELED) {
             return null;
         }
         else {
@@ -349,7 +349,7 @@ var EventFormatter = {
 
     getRunDistanceAndPace:function (warmupDistance, runDistance, cooldownDistance, runTime, runTypeId) {
 
-        if (runTypeId == EventTypes.INTERVAL_RUN || runTypeId == EventTypes.HILLS_RUN || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.EVENT_CANCELED) {
+        if (runTypeId == EventTypes.INTERVAL_RUN || runTypeId == EventTypes.HILLS_RUN || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.REST_DAY || runTypeId == EventTypes.EVENT_CANCELED) {
             // no meaning for run pace in these cases
             return null;
         }
@@ -435,9 +435,9 @@ var EventDialog = {
     // populate the run types <select>
     initRunTypes:function () {
         var select = document.getElementById("run_types");
-        for (var key in EVENT_TYPES_ATTRIBUTES) {
-            var value = key;
-            var label = EVENT_TYPES_ATTRIBUTES[key].getLabel();
+        for (var key in EventTypes) {
+            var value = EventTypes[key];
+            var label = EVENT_TYPES_ATTRIBUTES[value].getLabel();
             var option = new Option(label, value);
             select.options[select.options.length] = option;
         }
@@ -626,7 +626,7 @@ var EventDialog = {
      */
     runTypeChanged:function () {
         var runType = $('#run_types').val();
-        if (runType == EventTypes.OTHER_SPORT || runType == EventTypes.EVENT_CANCELED) {
+        if (runType == EventTypes.OTHER_SPORT || runType == EventTypes.REST_DAY || runType == EventTypes.EVENT_CANCELED) {
             $('#user_shoes').hide();
             $('#user_courses').hide();
             $('#duration_distance_pace').hide();

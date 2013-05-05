@@ -21,7 +21,7 @@ catch(PDOException $e) {
 $data [] = Array ("Name", $result[0]['member_name'], "Weekly running sessions");
 
 
-$sql = "SELECT (SUM(run_distance) + SUM(warmup_distance) + SUM(cooldown_distance)) as weekly, count(*) as a FROM  tl_events WHERE (runner_id = :runner_id AND run_date >= :week_start AND run_date <= :week_end AND run_type_id != '9' AND run_type_id != '10')";
+$sql = "SELECT (SUM(run_distance) + SUM(warmup_distance) + SUM(cooldown_distance)) as weekly, count(*) as a FROM  tl_events WHERE (runner_id = :runner_id AND run_date >= :week_start AND run_date <= :week_end AND run_type_id != '9' AND run_type_id != '10' AND run_type_id != '11')";
 $sth = $conn->prepare($sql, array (
 	PDO :: ATTR_CURSOR => PDO :: CURSOR_FWDONLY
 ));

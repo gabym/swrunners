@@ -67,7 +67,7 @@ function drawRunnersWeekCallback(jsonData) {
             legend:{position:'none'},
             width:920, height:400,
             hAxis:{textStyle:{fontSize:8, color:'#45423c'}, showTextEvery:1, slantedTextAngle:45, direction:-1, slantedText:true},
-            vAxis:{title:"'קילומטרז", viewWindow:{min:0, max:160}, minValue:0, maxValue:160, textStyle:{color:'#45423c'}},
+            vAxis:{title:"'קילומטרז", viewWindow:{min:0, max:160}, minValue:0, maxValue:160, gridlines:{count:9}, minorGridlines:{count:1}, textStyle:{color:'#45423c'}},
             seriesType:"bars"
         }
     );
@@ -131,8 +131,8 @@ function drawRunnerDataCallback(jsonData) {
             width:920, height:400,
             hAxis:{textStyle:{fontSize:8, color:'#45423c'}, showTextEvery:1, slantedTextAngle:45, direction:-1, slantedText:true},
             vAxes:{
-                0:{title:"'קילומטרז", viewWindow:{min:0, max:160}, minValue:0, maxValue:160, textStyle:{color:'#45423c'}},
-                1:{title:'מספר אימוני ריצה בשבוע', minValue:0, maxValue:12, textStyle:{color:'orange'}}},
+                0:{title:"'קילומטרז", viewWindow:{min:0, max:160}, minValue:0, maxValue:160, gridlines:{count:9}, minorGridlines:{count:1}, textStyle:{color:'#45423c'}},
+                1:{title:'מספר אימוני ריצה בשבוע', viewWindow:{min:0, max:16}, minValue:0, maxValue:16, textStyle:{color:'orange'}}},
             seriesType:"bars",
             series:{1:{type:"line", targetAxisIndex:1}}
         }

@@ -5,9 +5,9 @@
 	define('LOGGER_ERR', 0);
 	define('LOGGER_DBG', 1);
 
-    define('AUTH_SECRET_KEY', 'ettiEiner#1');
-    define('AUTH_SESSION_KEY_NAME', 'auth_member');
-    define('AUTH_COOKIE_NAME', 'tlog-number');
+    define('AUTH_SECRET_KEY', 'ettiEiner#2');
+    define('AUTH_SESSION_KEY_NAME', 'sw_auth_member');
+    define('AUTH_COOKIE_NAME', 'swlog-number');
     define('AUTH_COOKIE_DURATION', 2592000); // 30 days in seconds
 
     define('MEMBER_NAME_SESSION_KEY_NAME', 'member_name');

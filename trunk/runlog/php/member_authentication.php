@@ -95,6 +95,16 @@ class memberAuthentication
 
     public function login($memberEmail, $memberPassword, $rememberMe)
     {
+    	if (empty($memberEmail) || empty($memberPassword))
+    	{
+    		return false;
+    	}
+    	
+    	if (!filter_var($memberEmail, FILTER_VALIDATE_EMAIL))
+    	{
+    		return false;
+    	}
+    	
         $conn = getConnection();
         $sql = "SELECT * FROM tl_runners WHERE tl_runners.email = '$memberEmail' AND tl_runners.member_num = '$memberPassword'";
         $stmt = $conn->query($sql);

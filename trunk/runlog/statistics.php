@@ -309,9 +309,9 @@ $(document).ready(function () {
 <?php require 'widgets/header.php'; ?>
 
 <script type="text/javascript">
-    google.load('visualization', '1', {packages:['corechart']});
-    google.load('visualization', '1.1', {packages:['controls']});
-    google.load('visualization', '1', {packages:['table']});
+    google.load('visualization', '1.0', {packages:['corechart']});
+    google.load('visualization', '1.0', {packages:['controls']});
+    google.load('visualization', '1.0', {packages:['table']});
 </script>
 
 <div class="RunLog" class="ui-widget" style="width:920px; margin-left:auto; margin-right:auto; padding-bottom:40px;">

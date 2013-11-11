@@ -28,59 +28,36 @@ $sth = $conn->prepare($sql, array(
 $start_date = mktime(0, 0, 0, date("m", strtotime($_GET['start_date'])), date("d", strtotime($_GET['start_date'])), date("Y", strtotime($_GET['start_date'])));
 $end_date = mktime(0, 0, 0, date("m", strtotime($_GET['end_date'])), date("d", strtotime($_GET['end_date'])), date("Y", strtotime($_GET['end_date'])));
 
-$time_between = $end_date - $start_date;
-//find the days
-$day_count = ceil($time_between / 24 / 60 / 60);
-$newtime = $start_date;
+$start_of_week = $start_date;
+// start on sunday
+if (date("l", $start_of_week) != "Sunday") {
+    $start_of_week = strtotime('last Sunday', $start_of_week);
+}
+
 $counter = 0;
-//find the names/dates of the days
-for ($i = 0; $i <= $day_count; $i++) {
-    if ($i == 0 && date("l", $newtime) != "Sunday") {
-        //we're starting in the middle of a week.... show 1 earlier week than the code that follows
-        for ($s = 1; $s <= 6; $s++) {
-            $newtime = $start_date - ($s * 60 * 60 * 24);
-            if (date("l", $newtime) == "Sunday") {
-                $end_of_week = $newtime + (6 * 60 * 60 * 24);
-                $ok = $sth->execute(array(
-                    ':runner_id' => $runner_id,
-                    ':week_start' => date("Y-m-d", $newtime),
-                    ':week_end' => date("Y-m-d", $end_of_week)
-                ));
-                if (!$ok) {
-                    die(getErrorStatusWithDummyData("Failed to execute prepared statment"));
-                } else {
-                    $result = $sth->fetchAll(PDO :: FETCH_ASSOC);
-                    $data[] = array(date("Y-m-d", $end_of_week), intval($result[0]['weekly']), intval($result[0]['a']));
-                    if (intval($result[0]['weekly']) > 0) {
-                        $counter++;
-                    }
-                }
-                //echo ." through ".date("Y-m-d",$end_of_week)." is a week.<br />";
-            }
-        }
+
+while ($start_of_week < $end_date) {
+    $end_of_week = strtotime('next Saturday', $start_of_week);
+
+    $ok = $sth->execute(array(
+        ':runner_id' => $runner_id,
+        ':week_start' => date("Y-m-d", $start_of_week),
+        ':week_end' => date("Y-m-d", $end_of_week)
+    ));
+
+    if (!$ok) {
+        die(getErrorStatusWithDummyData("Failed to execute prepared statment"));
     } else {
-        $newtime = $start_date + ($i * 60 * 60 * 24);
-        if (date("l", $newtime) == "Sunday") {
-//Beginning of a week... show it
-            $end_of_week = $newtime + (6 * 60 * 60 * 24);
-            $ok = $sth->execute(array(
-                ':runner_id' => $runner_id,
-                ':week_start' => date("Y-m-d", $newtime),
-                ':week_end' => date("Y-m-d", $end_of_week)
-            ));
-            if (!$ok) {
-                die(getErrorStatusWithDummyData("Failed to execute prepared statment"));
-            } else {
-                $result = $sth->fetchAll(PDO :: FETCH_ASSOC);
-                $data[] = array(date("Y-m-d", $end_of_week), intval($result[0]['weekly']), intval($result[0]['a']));
-                if (intval($result[0]['weekly']) > 0) {
-                    $counter++;
-                }
-            }
-            //echo date("Y-m-d",$newtime)." through ".date("Y-m-d",$end_of_week)." is a week.<br />";
+        $result = $sth->fetchAll(PDO :: FETCH_ASSOC);
+        $data[] = array(date("Y-m-d", $end_of_week), intval($result[0]['weekly']), intval($result[0]['a']));
+        if (intval($result[0]['weekly']) > 0) {
+            $counter++;
         }
     }
+
+    $start_of_week = strtotime('+1 week', $start_of_week);
 }
+
 $conn = null;
 if ($counter == 0) {
     $data = "";

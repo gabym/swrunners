@@ -36,7 +36,7 @@ if (date("l", $start_of_week) != "Sunday") {
 
 $counter = 0;
 
-while ($start_of_week < $end_date) {
+while ($start_of_week <= $end_date) {
     $end_of_week = strtotime('next Saturday', $start_of_week);
 
     $ok = $sth->execute(array(

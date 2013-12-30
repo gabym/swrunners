@@ -141,6 +141,8 @@ require_once 'php/html_page_init.php';
         $('#show_all_events_label').show();
         $(window).unbind('scroll');
 
+        $('#show_more').hide();
+
         feed.empty();
         $.ajax({
             url: 'php/get_team_new_comments.php',
@@ -188,6 +190,8 @@ require_once 'php/html_page_init.php';
         $('#new_comments_header').hide();
         $('#show_all_events_label').hide();
         $(window).scroll(onFeedScroll);
+
+        $('#show_more').show();
 
         feed.empty();
         feedQueue = [];
@@ -238,6 +242,10 @@ require_once 'php/html_page_init.php';
         background-color: #deecf5;
         border-radius: 2px;
     }
+
+    #show_more {
+        margin: 20px 0;
+    }
 </style>
 </head>
 <body>
@@ -249,6 +257,9 @@ require_once 'php/html_page_init.php';
     <h2 id="new_comments_header" class="page_header" style="display:none;">פירגונים חדשים</h2>
     <a id="show_all_events_label" href="#" onclick="showAllComments(); return false;" style="display:none;">הצג את כל האימונים</a>
     <div id="feed"></div>
+    <div id="show_more">
+        <a href="#" onclick="getNextDayEvents(); return false;">הצג עוד</a>
+    </div>
 </div>
 </body>
 </html>

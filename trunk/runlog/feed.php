@@ -211,6 +211,7 @@ require_once 'php/html_page_init.php';
         feedQueue.push(new Date(date));
         getDayEvents();
         getTeamCommentsStatus();
+        $('#comment_menu').menu();
     }
 
     $(document).ready(function () {
@@ -256,6 +257,7 @@ require_once 'php/html_page_init.php';
     <span id="no_new_comments_action" style="display:none;">אין פירגונים חדשים</span>
     <h2 id="new_comments_header" class="page_header" style="display:none;">פירגונים חדשים</h2>
     <a id="show_all_events_label" href="#" onclick="showAllComments(); return false;" style="display:none;">הצג את כל האימונים</a>
+	<div id="comment_menu"></div>
     <div id="feed"></div>
     <div id="show_more">
         <a href="#" onclick="getNextDayEvents(); return false;">הצג עוד</a>

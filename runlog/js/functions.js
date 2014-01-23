@@ -684,15 +684,15 @@ var Comments = {
                 '</div>';
 
         $container.append(eventHtml);
-        $('#event_new_comment_'+event.id).elastic().keypress(Comments.onCommentKeyPress);
+        $('#event_new_comment_'+event.id).elastic().keypress(Comments.onNewCommentKeyPress);
     },
 
     appendComment: function (comment, lastFetchedTimestamp) {
-        var eventComments = $('#event_comments_' + comment.event_id);
-        if (!eventComments.is(':empty')) {
-            eventComments.append('<div class="separator"></div>');
+        var $eventComments = $('#event_comments_' + comment.event_id);
+        if (!$eventComments.is(':empty')) {
+            $eventComments.append('<div class="separator"></div>');
         }
-        eventComments.parent().addClass('comments_on');
+        $eventComments.parent().addClass('comments_on');
 
         var commentCssClass = 'comment';
         if (lastFetchedTimestamp &&
@@ -700,20 +700,28 @@ var Comments = {
             (Time.sqlDateToJsDateTime(comment.timestamp).getTime() >=  Time.sqlDateToJsDateTime(lastFetchedTimestamp).getTime())){
             commentCssClass += ' new_comment';
         }
-        else if (eventComments.find('.comment:last').hasClass('new_comment')){
+        else if ($eventComments.find('.comment:last').hasClass('new_comment')){
             commentCssClass += ' new_comment';
         }
 
         var commentHtml =
             '<div class="' + commentCssClass + '" id="event_comment_' + comment.comment_id + '">' +
-            '   <b>' + comment.commenter_name + '</b>: ' + comment.comment +
-            (comment.commenter_name == gMemberName ? '  <a class="remove_btn" href="#" onclick="Comments.removeComment(\'' + comment.event_id + '\', \'' + comment.comment_id + '\'); return false;">x</a>' : '') +
-            '</div>';
-
-        eventComments.append(commentHtml);
+                Comments.getCommentHtml(comment.event_id, comment.comment_id, comment.commenter_name, comment.comment)  +
+            '</div>'
+        $eventComments.append(commentHtml);
     },
 
-    onCommentKeyPress: function (e) {
+    getCommentHtml: function(eventId, commentId, commenterName, comment) {
+        var commentHtml =
+            '<b>' + commenterName + '</b>: <span id="event_comment_inner_' + commentId + '">' + comment + '</span>' +
+            (commenterName == gMemberName ?
+		        ' <a class="menu_btn" href="#" onclick="Comments.showMenu(\'' + eventId + '\', \'' + commentId + '\'); return false;">&or;</a>' :
+                '');
+
+        return commentHtml;
+    },
+
+    onNewCommentKeyPress: function (e) {
         if (e.keyCode == 13 && !e.shiftKey) {
             Comments.createComment($(e.target));
             return false;
@@ -753,8 +761,39 @@ var Comments = {
             });
         }
     },
+    
+    showMenu: function(eventId, commentId) {
+    	Comments.hideMenu();
+    	
+    	var commentMenu = $('#comment_menu');
+    	commentMenu.html(
+    	'<ul>' +
+		'	<li><a href="#" onclick="Comments.editComment(' + eventId + ', ' + commentId + '); return false;">עריכה</a></li>' +
+		'	<li><a href="#" onclick="Comments.removeComment(' + eventId + ', ' + commentId + '); return false;">מחיקה</a></li>' +
+		'</ul>');
+		
+        var eventComments = $('#event_comments_' + eventId);
+        var comment = eventComments.find('#event_comment_' + commentId);
+        comment.append(commentMenu);
+        commentMenu.show();
+    },
+    
+    hideMenu: function() {
+    	var commentMenu = $('#comment_menu');
+    	commentMenu.hide();
+    	$('.content').append(commentMenu);
+    },
 
-    removeComment: function (eventId, commentId) {
+    onEditCommentKeyDowm: function (e) {
+        if (e.keyCode == 13 && !e.shiftKey) {
+            Comments.updateComment($(e.target));
+            return false;
+        } else if (e.keyCode == 27){
+            Comments.undoUpdateComment($(e.target));
+        }
+    },
+
+    removeComment: function(eventId, commentId) {
         $.ajax({
             url: 'php/delete_event_comment.php',
             dataType: 'text',
@@ -767,20 +806,80 @@ var Comments = {
                     alert("Delete failed: " + doc.status.emessage);
                 }
                 else {
-                    var eventComments = $('#event_comments_' + eventId);
-                    var comment = eventComments.find('#event_comment_' + commentId);
-                    var separator = comment.prev('.separator');
-                    if (separator.length == 0) {
-                        var separator = comment.next('.separator');
+                    var $eventComments = $('#event_comments_' + eventId);
+                    var $comment = $eventComments.find('#event_comment_' + commentId);
+                    var $separator = $comment.prev('.separator');
+                    if ($separator.length == 0) {
+                        var separator = $comment.next('.separator');
                     }
-                    comment.remove();
-                    separator.remove();
-                    if (eventComments.is(':empty')) {
-                        eventComments.parent().removeClass('comments_on');
+                    Comments.hideMenu();
+                    $comment.remove();
+                    $separator.remove();
+                    if ($eventComments.is(':empty')) {
+                        $eventComments.parent().removeClass('comments_on');
                     }
                 }
             }
         });
+    },
+
+    editComment: function (eventId, commentId) {
+    	Comments.hideMenu();
+    	
+        var $eventComments = $('#event_comments_' + eventId);
+        var $comment = $eventComments.find('#event_comment_' + commentId);
+        var commentText = $comment.find('#event_comment_inner_' + commentId).text();
+
+        var $editCommentTextarea = jQuery('<textarea id="event_edit_comment_' + eventId + '_' + commentId + '" class="event_edit_comment" maxlength="511" data-original-comment="' + commentText + '">' + commentText + '</textarea>');
+        $comment.html($editCommentTextarea);
+        $editCommentTextarea.elastic().keydown(Comments.onEditCommentKeyDowm).blur(function(e){Comments.undoUpdateComment($(e.target));});
+        var commentLength = $editCommentTextarea.text().length;
+        $editCommentTextarea[0].setSelectionRange(commentLength, commentLength);
+    },
+
+    updateComment: function($commentTextarea) {
+        var eventAndCommentIds = $commentTextarea.attr('id').replace('event_edit_comment_', '').split('_');
+        var eventId = eventAndCommentIds[0];
+        var commentId = eventAndCommentIds[1];
+        var comment = $commentTextarea.val();
+
+        if (comment) {
+            $.ajax({
+                url: 'php/update_event_comment.php',
+                dataType: 'text',
+                data: {
+                    event_comment_id: commentId,
+                    event_comment: JSON.stringify(comment)
+                },
+                success: function (txt) {
+                    var doc = Utils.parseJSON(txt);
+                    if (doc.status.ecode == STATUS_ERR) {
+                        alert("Update failed: " + doc.status.emessage);
+                    }
+                    else {
+                        Comments.closeCommentEdit(eventId, commentId, comment);
+                    }
+                }
+            });
+        } else {
+            Comments.removeComment(eventId, commentId);
+        }
+    },
+
+    closeCommentEdit: function(eventId, commentId, comment) {
+        var commentHtml = Comments.getCommentHtml(eventId, commentId, gMemberName, comment);
+
+        var $eventComments = $('#event_comments_' + eventId);
+        var $comment = $eventComments.find('#event_comment_' + commentId);
+        $comment.html(commentHtml);
+    },
+
+    undoUpdateComment: function($commentTextarea) {
+        var eventAndCommentIds = $commentTextarea.attr('id').replace('event_edit_comment_', '').split('_');
+        var eventId = eventAndCommentIds[0];
+        var commentId = eventAndCommentIds[1];
+        var comment = $commentTextarea.attr('data-original-comment');
+        Comments.closeCommentEdit(eventId, commentId, comment);
     }
 }
 
@@ -1350,5 +1449,4 @@ var Time = {
 
         return year + '-' + month + '-' + day + ' 00:00:00';
     }
-
 };

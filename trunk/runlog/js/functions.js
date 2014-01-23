@@ -763,19 +763,24 @@ var Comments = {
     },
     
     showMenu: function(eventId, commentId) {
-    	Comments.hideMenu();
-    	
-    	var commentMenu = $('#comment_menu');
-    	commentMenu.html(
-    	'<ul>' +
-		'	<li><a href="#" onclick="Comments.editComment(' + eventId + ', ' + commentId + '); return false;">עריכה</a></li>' +
-		'	<li><a href="#" onclick="Comments.removeComment(' + eventId + ', ' + commentId + '); return false;">מחיקה</a></li>' +
-		'</ul>');
-		
-        var eventComments = $('#event_comments_' + eventId);
-        var comment = eventComments.find('#event_comment_' + commentId);
-        comment.append(commentMenu);
-        commentMenu.show();
+
+        var commentMenu = $('#comment_menu');
+        var $eventComments = $('#event_comments_' + eventId);
+        var $comment = $eventComments.find('#event_comment_' + commentId);
+
+        if ($comment.find(commentMenu).length == 0) {
+            Comments.hideMenu();
+            commentMenu.html(
+            '<ul>' +
+            '	<li><a href="#" onclick="Comments.editComment(' + eventId + ', ' + commentId + '); return false;">עריכה</a></li>' +
+            '	<li><a href="#" onclick="Comments.removeComment(' + eventId + ', ' + commentId + '); return false;">מחיקה</a></li>' +
+            '</ul>');
+
+            $comment.append(commentMenu);
+            commentMenu.show();
+        } else {
+            Comments.hideMenu();
+        }
     },
     
     hideMenu: function() {

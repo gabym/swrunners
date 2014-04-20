@@ -343,8 +343,8 @@ $(document).ready(function () {
     <div id="runnerweeks" style="width:920px; height:400px; margin-top:40px;"></div>
 
     <div id="dashboard" style="width:920px; min-height:400px; margin-top:80px;">
-        <div id="report" style="width:620px; margin-left:50px; float:right;"></div>
-        <div style="float:right;">
+        <div id="report" style="width:620px; float:right;"></div>
+        <div style="float:left;">
             <div id="control1"></div>
             <br>
 

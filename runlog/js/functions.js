@@ -139,7 +139,7 @@ var Calendar = {
                         event_fields_data = Calendar.appendIdentityFields(event_fields_data, calEvent);
                         var event_fields_str = JSON.stringify(event_fields_data);
                         $.ajax({
-                            url:'php/update_event2.php',
+                            url:'php/update_event.php',
                             dataType:'text',
                             data:{
                                 event_fields:event_fields_str
@@ -229,7 +229,7 @@ var Calendar = {
                             event_fields_data.date = the_date;
                             var event_fields_str = JSON.stringify(event_fields_data);
                             $.ajax({
-                                url:'php/create_event2.php',
+                                url:'php/create_event.php',
                                 dataType:'text',
                                 data:{
                                     event_fields:event_fields_str
@@ -610,7 +610,7 @@ var EventDialog = {
     // set the data and populates relevant fields according to the given calendar event
     setData:function (calEvent) {
         $.ajax({
-            url:'php/get_event_details2.php',
+            url:'php/get_event_details.php',
             dataType:'text',
             data:{
                 event_id:calEvent.event_id,

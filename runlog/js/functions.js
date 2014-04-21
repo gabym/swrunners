@@ -308,8 +308,8 @@ var Calendar = {
 
         var runnerName = event.name;
         var eventTypeName = event.type;
-        var eventTotalDistance = EventFormatter.getTotalDistance(event.run_distance, event.extra_distance, event.run_type_id);
-        var runDistanceAndPace = EventFormatter.getRunDistanceAndPace(event.run_distance, event.extra_distance, event.run_time, event.run_type_id)
+        var eventTotalDistance = EventFormatter.getTotalDistance(event.warmup_distance, event.run_distance, event.cooldown_distance, event.run_type_id);
+        var runDistanceAndPace = EventFormatter.getRunDistanceAndPace(event.warmup_distance, event.run_distance, event.cooldown_distance, event.run_time, event.run_type_id)
         var notes = event.notes;
 
         var html = '';
@@ -398,7 +398,7 @@ var EventFormatter = {
             }
         }
         else if (warmupOrCooldown) {
-            runDistanceAndPace += ' תרגיל מתוך סה״כ ' + totalRunDistanceFormatted;
+            runDistanceAndPace += ' מתוך סה״כ ' + totalRunDistanceFormatted;
         }
 
         return runDistanceAndPace;

@@ -14,9 +14,9 @@ $eventFields = getEventFields();
 //
 // Make sure we have the 'event_id'
 //
-$event_id = $eventFields-> {"event_id" };	
+$event_id = $eventFields-> {"event_id" };
 if (!isset ($event_id)) {
-	die(getErrorStatusWithDummyData("Mandatory input - event_id was not found."));
+    die(getErrorStatusWithDummyData("Mandatory input - event_id was not found."));
 }
 
 //
@@ -24,43 +24,40 @@ if (!isset ($event_id)) {
 //
 $validationResult = validateEventFields($eventFields);
 if(!$validationResult->isValid()) {
-		die(getErrorStatusWithDummyData("Invalid field value: " . $validationResult->getMessage()));
+    die(getErrorStatusWithDummyData("Invalid field value: " . $validationResult->getMessage()));
 }
 
 //
 // Invoke SQL UPDATE
 //
 try {
-	$conn = getConnection();
-	$sql = "UPDATE  tl_events  SET run_type_id=?,warmup_time=?,run_time=?,cooldown_time=?,warmup_distance=?,run_distance=?,cooldown_distance=?,notes=?,shoe_id=?,course_id=? WHERE id=?";
-	//$sql = "UPDATE tl_events  SET run_type_id=?,warmup_time=? WHERE id=?";
-	
-	$sth = $conn->prepare($sql);
-	$run_type_id = (int)$eventFields-> {"run_type_id"};
-	$warmup_time = (int)$eventFields-> {"warmup_time"};
-	$event_id = (int)$eventFields-> {"event_id"};
-	
-	
-	$ok = $sth->execute(array (
-		$run_type_id,
-		$warmup_time,
-		(int)$eventFields-> {"run_time"},
-		(int)$eventFields-> {"cooldown_time"},
-		$eventFields-> {"warmup_distance"},
-		$eventFields-> {"run_distance"},
-		$eventFields-> {"cooldown_distance"},
-		$eventFields-> {"notes"},
-		(int)$eventFields-> {"shoe_id"},
-		(int)$eventFields-> {"course_id"},
-		$event_id
-	
-	));
-	if (!$ok) {
-		die(getErrorStatusWithDummyData("Failed to update table."));
-	} else {
-		echo returnJSONsuccess("");
-	}
-	$conn = null;
+    $conn = getConnection();
+    $sql = "UPDATE  tl_events  SET run_type_id=?,warmup_time=?,run_time=?,cooldown_time=?,warmup_distance=?,run_distance=?,cooldown_distance=?,notes=?,shoe_id=?,extra_shoe_id=?,course_id=? WHERE id=?";
+    //$sql = "UPDATE tl_events  SET run_type_id=?,warmup_time=? WHERE id=?";
+
+    $sth = $conn->prepare($sql);
+
+    $ok = $sth->execute(array (
+        (int)$eventFields->{"run_type_id"},
+        0,
+        (int)$eventFields->{"run_time"},
+        0,
+        $eventFields->{"extra_run_distance"},
+        $eventFields->{"run_distance"},
+        0,
+        $eventFields->{"notes"},
+        (int)$eventFields->{"shoe_id"},
+        (int)$eventFields->{"extra_shoe_id"},
+        (int)$eventFields->{"course_id"},
+        (int)$eventFields->{"event_id"}
+
+    ));
+    if (!$ok) {
+        die(getErrorStatusWithDummyData("Failed to update table."));
+    } else {
+        echo returnJSONsuccess("");
+    }
+    $conn = null;
 } catch (PDOException $e) {
-	die(getErrorStatusWithDummyData($e->getMessage()));
+    die(getErrorStatusWithDummyData($e->getMessage()));
 }

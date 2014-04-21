@@ -80,63 +80,69 @@ require_once 'php/html_page_init.php';
     <form>
         <!-- Event types -->
         <div style="margin-top:15px;">
-            <label for="run_types" class="label">סוג אימון:</label>
+            <label for="run_types" class="label">סוג אימון</label>
             <select id="run_types"></select>
-        </div>
-
-        <!-- Shoes -->
-        <div id="user_shoes" style="margin-top:5px;">
-            <label id="shoesSelectLabel" class="label" for="shoesSelect">נעל:</label>
-            <span id='inactive_shoe'></span>
-            <select id="shoesSelect"></select>
         </div>
 
         <!-- Courses -->
         <div id="user_courses" style="margin-top:5px;">
-            <label id="courseSelectLabel" class="label" for="courseSelect">מסלול:</label>
+            <label id="courseSelectLabel" class="label" for="courseSelect">מסלול</label>
             <span id='inactive_course'></span>
             <select id="courseSelect"></select>
         </div>
 
         <!-- Duration, Distance, Pace -->
         <div id="duration_distance_pace">
-            <table cellspacing="0" cellpadding="0" border="0" id="duration_distance_pace_table">
-                <tr>
-                    <th class="first"></th>
-                    <th>מרחק</th>
-                    <th>זמן</th>
-                    <th>קצב</th>
-                </tr>
-                <tr>
-                    <td class="first">חימום:</td>
-                    <td><input type="text" id="warmup_distance"></td>
-                    <td><input type="text" id="warmup_time"></td>
-                    <td>
-                        <div id="warmup_pace" class="pace"></div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="first">תרגיל:</td>
-                    <td><input type="text" id="run_distance"></td>
-                    <td><input type="text" id="run_time"></td>
-                    <td>
-                        <div id="run_pace" class="pace"></div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="first">שחרור:</td>
-                    <td><input type="text" id="cooldown_distance"></td>
-                    <td><input type="text" id="cooldown_time"></td>
-                    <td>
-                        <div id="cooldown_pace" class="pace"></div>
-                    </td>
-                </tr>
-            </table>
+            <div id="main_run" style="float:right;">
+                <table cellspacing="0" cellpadding="0" border="0" class="duration_distance_pace_table">
+                    <tr>
+                        <th>מרחק</th>
+                        <th>זמן</th>
+                        <th>קצב</th>
+                    </tr>
+                    <tr>
+                        <td><input type="text" id="run_distance"></td>
+                        <td><input type="text" id="run_time"></td>
+                        <td>
+                            <div id="run_pace" class="pace"></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Shoe -->
+                <div class="user_shoes">
+                    <label id="shoesSelectLabel" class="label" for="shoesSelect">נעל</label>
+                    <span id='inactive_shoe'></span>
+                    <select id="shoeSelect"></select>
+                </div>
+            </div>
+
+            <div class="separator" style="float:right;"></div>
+
+            <div id="extra_run" style="float:right;">
+                <table cellspacing="0" cellpadding="0" border="0" class="duration_distance_pace_table">
+                    <tr>
+                        <th>תוספת מרחק (חימום ושחרור)</th>
+                    </tr>
+                    <tr>
+                        <td><input type="text" id="extra_run_distance"></td>
+                    </tr>
+                </table>
+
+                <!-- Extra shoe -->
+                <div class="user_shoes">
+                    <label class="label" for="extraShoeSelect">נעל</label>
+                    <span id='inactive_extra_shoe'></span>
+                    <select id="extraShoeSelect"></select>
+                </div>
+            </div>
+
+            <div class="clear"></div>
         </div>
 
         <!-- Notes -->
         <div style="margin-top:20px;">
-            <div class="label" style="float:right;">פרטים:</div>
+            <div class="label">פרטים</div>
             <div id="notesContainer" style="float:right;"></div>
         </div>
     </form>

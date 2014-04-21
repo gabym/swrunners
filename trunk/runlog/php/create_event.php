@@ -32,58 +32,45 @@ $eventFields = getEventFields();
 //
 $validationResult = validateEventFields($eventFields);
 if (!$validationResult->isValid()) {
-	die(getErrorStatusWithDummyData("Invalid field value: " . $validationResult->getMessage()));
+    die(getErrorStatusWithDummyData("Invalid field value: " . $validationResult->getMessage()));
 }
 
 $validationResult = validatePositiveInt($eventFields-> {"date"});
 
 if (!$validationResult->isValid()) {
-	die(getErrorStatusWithDummyData("Invalid date: " . $validationResult->getMessage()));
+    die(getErrorStatusWithDummyData("Invalid date: " . $validationResult->getMessage()));
 }
 $the_date = $eventFields-> {"date"};
 
 
 // OK - now we have a valid input - lets try to create the event from DB
 try {
-	$conn = getConnection();
-	$sql = 'INSERT INTO tl_events (run_date,warmup_time,run_time,cooldown_time,warmup_distance,run_distance,cooldown_distance,notes,runner_id,shoe_id,course_id,run_type_id) VALUES (:run_date,:warmup_time,:run_time,:cooldown_time,:warmup_distance,:run_distance,:cooldown_distance,:notes,:runner_id,:shoe_id,:course_id,:run_type_id)';
-	$sth = $conn->prepare($sql);
-	
-	$ok = $sth->execute(array (
-		':run_date' => $the_date,
-		':warmup_time' => $eventFields-> {
-			"warmup_time" },
-		':run_time' => $eventFields-> {
-			"run_time" },
-		':cooldown_time' => $eventFields-> {
-			"cooldown_time" },
-		':warmup_distance' => $eventFields-> {
-			"warmup_distance" },
-		':run_distance' => $eventFields-> {
-			"run_distance" },
-		':cooldown_distance' => $eventFields-> {
-			"cooldown_distance" },
-		':notes' => $eventFields-> {
-			"notes" },
-		':runner_id' => $eventFields-> {
-			"runner_id" },
-		':shoe_id' => $eventFields-> {
-			"shoe_id" },
-		':course_id' => $eventFields-> {
-			"course_id" },
-		':run_type_id' => $eventFields-> {
-			"run_type_id" },
-		
-	));
+    $conn = getConnection();
+    $sql = 'INSERT INTO tl_events (run_date,warmup_time,run_time,cooldown_time,warmup_distance,run_distance,cooldown_distance,notes,runner_id,shoe_id,extra_shoe_id,course_id,run_type_id) VALUES (:run_date,:warmup_time,:run_time,:cooldown_time,:warmup_distance,:run_distance,:cooldown_distance,:notes,:runner_id,:shoe_id,:extra_shoe_id,:course_id,:run_type_id)';
+    $sth = $conn->prepare($sql);
 
-	if (!$ok) {
-		die(getErrorStatusWithDummyData("Failed to Create Event."));
-	} else {
-		echo returnJSONsuccess("");
-	}
-	$conn = null;
+    $ok = $sth->execute(array (
+        ':run_date' => $the_date,
+        ':warmup_time' => 0,
+        ':run_time' => $eventFields->{"run_time"},
+        ':cooldown_time' => 0,
+        ':warmup_distance' => $eventFields->{"extra_run_distance"},
+        ':run_distance' => $eventFields->{"run_distance"},
+        ':cooldown_distance' => 0,
+        ':notes' => $eventFields->{"notes"},
+        ':runner_id' => $eventFields->{"runner_id"},
+        ':shoe_id' => $eventFields->{"shoe_id"},
+        ':extra_shoe_id' => $eventFields->{"extra_shoe_id"},
+        ':course_id' => $eventFields->{"course_id"},
+        ':run_type_id' => $eventFields->{"run_type_id"},
+    ));
+
+    if (!$ok) {
+        die(getErrorStatusWithDummyData("Failed to Create Event."));
+    } else {
+        echo returnJSONsuccess("");
+    }
+    $conn = null;
 } catch (PDOException $e) {
-	die(getErrorStatusWithDummyData($e->getMessage()));
+    die(getErrorStatusWithDummyData($e->getMessage()));
 }
-
-?>

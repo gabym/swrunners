@@ -34,7 +34,7 @@ var Calendar = {
 
         EventDialog.init();
     },
-    
+
     init2:function () {
         $('#calendar').fullCalendar({
             header:{
@@ -83,7 +83,7 @@ var Calendar = {
             }
         });
     },
-    
+
     // Fetch events from the server
     fetchEvents2:function (start, end, callback) {
         $.ajax({
@@ -123,9 +123,10 @@ var Calendar = {
             return;
         }
 
+        EventDialog.reset();
         $('#create_update_event_dialog').dialog({
             height:460,
-            width:380,
+            width:500,
             show:{
                 effect:'drop',
                 direction:'rtl'
@@ -138,7 +139,7 @@ var Calendar = {
                         event_fields_data = Calendar.appendIdentityFields(event_fields_data, calEvent);
                         var event_fields_str = JSON.stringify(event_fields_data);
                         $.ajax({
-                            url:'php/update_event.php',
+                            url:'php/update_event2.php',
                             dataType:'text',
                             data:{
                                 event_fields:event_fields_str
@@ -214,7 +215,7 @@ var Calendar = {
         $('#create_update_event_dialog').dialog(
             {
                 height:460,
-                width:380,
+                width:500,
                 show:{
                     effect:'drop',
                     direction:'rtl'
@@ -228,7 +229,7 @@ var Calendar = {
                             event_fields_data.date = the_date;
                             var event_fields_str = JSON.stringify(event_fields_data);
                             $.ajax({
-                                url:'php/create_event.php',
+                                url:'php/create_event2.php',
                                 dataType:'text',
                                 data:{
                                     event_fields:event_fields_str
@@ -307,8 +308,8 @@ var Calendar = {
 
         var runnerName = event.name;
         var eventTypeName = event.type;
-        var eventTotalDistance = EventFormatter.getTotalDistance(event.warmup_distance, event.run_distance, event.cooldown_distance, event.run_type_id);
-        var runDistanceAndPace = EventFormatter.getRunDistanceAndPace(event.warmup_distance, event.run_distance, event.cooldown_distance, event.run_time, event.run_type_id)
+        var eventTotalDistance = EventFormatter.getTotalDistance(event.run_distance, event.extra_distance, event.run_type_id);
+        var runDistanceAndPace = EventFormatter.getRunDistanceAndPace(event.run_distance, event.extra_distance, event.run_time, event.run_type_id)
         var notes = event.notes;
 
         var html = '';
@@ -338,18 +339,18 @@ var Calendar = {
 var EventFormatter = {
     getTotalDistance:function (warmupDistance, runDistance, cooldownDistance, runTypeId) {
 
-        var totalDistance = parseFloat(warmupDistance) + parseFloat(runDistance) + parseFloat(cooldownDistance);
-        if (totalDistance == NaN || totalDistance == 0 || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.REST_DAY || runTypeId == EventTypes.EVENT_CANCELED) {
+        var runDistance = parseFloat(runDistance);
+        if (runDistance == NaN || runDistance == 0 || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.REST_DAY || runTypeId == EventTypes.EVENT_CANCELED) {
             return null;
         }
         else {
-            return (totalDistance).toFixed(1) + ' ק"מ';
+            return (runDistance).toFixed(1) + ' ק"מ';
         }
     },
 
     getRunDistanceAndPace:function (warmupDistance, runDistance, cooldownDistance, runTime, runTypeId) {
 
-        if (runTypeId == EventTypes.INTERVAL_RUN || runTypeId == EventTypes.HILLS_RUN || runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.REST_DAY || runTypeId == EventTypes.EVENT_CANCELED) {
+        if (runTypeId == EventTypes.OTHER_SPORT || runTypeId == EventTypes.REST_DAY || runTypeId == EventTypes.EVENT_CANCELED) {
             // no meaning for run pace in these cases
             return null;
         }
@@ -359,6 +360,16 @@ var EventFormatter = {
             return;
         }
 
+        var warmupDistance = parseFloat(warmupDistance);
+        if (warmupDistance == NaN) {
+            warmupDistance = 0;
+        }
+
+        var cooldownDistance = parseFloat(cooldownDistance);
+        if (cooldownDistance == NaN) {
+            cooldownDistance = 0;
+        }
+
         var runTimeFormatted = null;
         if (runTime > 3600) {
             runTimeFormatted = Time.convertSecondsToHMMSS(runTime);
@@ -366,23 +377,28 @@ var EventFormatter = {
         else if (runTime > 0) {
             runTimeFormatted = Time.convertSecondsToMMSS(runTime);
         }
-        var runPace = Time.calculatePace(runDistance, runTime);
-        var warmupOrCooldown = (parseFloat(warmupDistance) > 0 || parseFloat(cooldownDistance) > 0);
 
-        var runDistanceFormatted = (runDistance).toFixed(1) + ' ק"מ';
+        var runPace = Time.calculatePace(runDistance, runTime);
+        var warmupOrCooldown = (warmupDistance > 0 || cooldownDistance > 0);
+        if (warmupOrCooldown) {
+            totalRunDistanceFormatted = (warmupDistance + runDistance + cooldownDistance).toFixed(1) + ' ק"מ';
+        } else {
+            totalRunDistanceFormatted = '';
+        }
+
         var runDistanceAndPace = '';
         if (runTimeFormatted != null) {
-            if (warmupOrCooldown) {
-                runDistanceAndPace += 'מתוכם ' + runDistanceFormatted;
-            }
-
             runDistanceAndPace += ' ב- ' + runTimeFormatted;
             if (runPace != null) {
                 runDistanceAndPace += ' (' + runPace + ')';
             }
+
+            if (warmupOrCooldown) {
+                runDistanceAndPace += ' מתוך סה״כ ' + totalRunDistanceFormatted;
+            }
         }
         else if (warmupOrCooldown) {
-            runDistanceAndPace += 'מתוכם ' + runDistanceFormatted + ' תרגיל';
+            runDistanceAndPace += ' תרגיל מתוך סה״כ ' + totalRunDistanceFormatted;
         }
 
         return runDistanceAndPace;
@@ -397,36 +413,37 @@ var EventDialog = {
         this.initRunTypes();
         this.initShoesAndCourses();
         $('#courseSelect').change(this.courseChanged);
+        EventDialog.shoesDetached = false;
+        $('#shoeSelect').change(this.shoeChanged);
+        $('#extraShoeSelect').change(this.extraShoeChanged);
 
         // input masking for distance, duration fields
         $.mask.definitions['5'] = "[0-5]";
-        $('#warmup_distance').mask('9.9', {placeholder:"0"});
-        $('#warmup_time').mask('59:59', {placeholder:"0"});
         $('#run_distance').mask('99.9', {placeholder:"0"});
         $('#run_time').mask('9:59:59', {placeholder:"0"});
-        $('#cooldown_distance').mask('9.9', {placeholder:"0"});
-        $('#cooldown_time').mask('59:59', {placeholder:"0"});
+        $('#extra_run_distance').mask('9.9', {placeholder:"0"});
 
         // handler for distance, duration change event in order to update pace
-        $('#duration_distance_pace input[type="text"]').blur(this.calculatePace);
+        $('#main_run input[type="text"]').blur(this.calculatePace);
     },
 
     // resets the event dialog to its default values
     reset:function () {
         SelectUtils.makeSelection('run_types', EventTypes.RECOVERY_RUN);
         $('#run_types').trigger('change');
-        SelectUtils.resetSelect('shoesSelect');
         SelectUtils.resetSelect('courseSelect');
+        SelectUtils.resetSelect('shoeSelect');
+        $('#shoeSelect').show();
+        $('#inactive_shoe').hide();
+        SelectUtils.resetSelect('extraShoeSelect');
+        $('#extraShoeSelect').show();
+        $('#inactive_extra_shoe').hide();
+        EventDialog.shoesDetached = false;
 
-        $('#warmup_distance').val('0.0');
-        $('#warmup_time').val('00:00');
-        $('#warmup_pace').text('');
         $('#run_distance').val('00.0');
         $('#run_time').val('0:00:00');
         $('#run_pace').text('');
-        $('#cooldown_distance').val('0.0');
-        $('#cooldown_time').val('00:00');
-        $('#cooldown_pace').text('');
+        $('#extra_run_distance').val('0.0');
 
         $('#notesContainer').empty().append('<textarea id="notes"></textarea>');
         $('#notes').val('').elastic();
@@ -455,9 +472,9 @@ var EventDialog = {
             SelectUtils.addOptionAtTopAndSelectIt(controlId, selectPrompt, NOT_SELECTED, false);
             SelectUtils.populateSelect(controlId, data, extraDataFieldName);
 
-            $('#' + controlContainer).show();
+            $(controlContainer).show();
         } else {
-            $('#' + controlContainer).hide();
+            $(controlContainer).hide();
 
         }
     },
@@ -476,8 +493,9 @@ var EventDialog = {
                 if (doc.status.ecode == STATUS_ERR) {
                     alert("Fetch shoes and courses failed: " + doc.status.emessage);
                 } else {
-                    EventDialog.initSelect('shoesSelect', doc.data.shoes, SELECT_SHOE_PROMPT, 'user_shoes');
-                    EventDialog.initSelect('courseSelect', doc.data.courses, SELECT_COURSE_PROMPT, 'user_courses', 'length');
+                    EventDialog.initSelect('shoeSelect', doc.data.shoes, SELECT_SHOE_PROMPT, '.user_shoes');
+                    EventDialog.initSelect('extraShoeSelect', doc.data.shoes, SELECT_SHOE_PROMPT, '.user_shoes');
+                    EventDialog.initSelect('courseSelect', doc.data.courses, SELECT_COURSE_PROMPT, '#user_courses', 'length');
                 }
             }
         });
@@ -552,14 +570,6 @@ var EventDialog = {
     // Collect the event fields into single object
     getData:function () {
         var eventFields = new Object();
-        eventFields.warmup_distance = $('#warmup_distance').val();
-        if (!this.validateDistance("חימום", eventFields.warmup_distance, MIN_WARMUP_DISTANCE, MAX_WARMUP_DISTANCE)) {
-            return null;
-        }
-        eventFields.warmup_time = Time.convertMMSSToSeconds($('#warmup_time').val());
-        if (!this.validateDuration("חימום", eventFields.warmup_time, MIN_WARMUP_TIME, MAX_WARMUP_TIME, Time.convertSecondsToMMSS)) {
-            return null;
-        }
         eventFields.run_distance = $('#run_distance').val();
         if (!this.validateDistance("תרגיל", eventFields.run_distance, MIN_RUN_DISTANCE, MAX_RUN_DISTANCE)) {
             return null;
@@ -568,18 +578,31 @@ var EventDialog = {
         if (!this.validateDuration("תרגיל", eventFields.run_time, MIN_RUN_TIME, MAX_RUN_TIME, Time.convertSecondsToHMMSS)) {
             return null;
         }
-        eventFields.cooldown_distance = $('#cooldown_distance').val();
-        if (!this.validateDistance("שחרור", eventFields.cooldown_distance, MIN_COOLDOWN_DISTANCE, MAX_COOLDOWN_DISTANCE)) {
+        eventFields.extra_run_distance = $('#extra_run_distance').val();
+        if (!this.validateDistance("תוספת", eventFields.extra_run_distance, MIN_EXTRA_DISTANCE, MAX_EXTRA_DISTANCE)) {
             return null;
         }
-        eventFields.cooldown_time = Time.convertMMSSToSeconds($('#cooldown_time').val());
-        if (!this.validateDuration("שחרור", eventFields.cooldown_time, MIN_COOLDOWN_TIME, MAX_COOLDOWN_TIME, Time.convertSecondsToMMSS)) {
-            return null;
+        var runType = $('#run_types').val();
+        if (runType == EventTypes.OTHER_SPORT || runType == EventTypes.REST_DAY || runType == EventTypes.EVENT_CANCELED) {
+            eventFields.run_distance = 0;
+            eventFields.run_time = 0;
+            eventFields.extra_run_distance = 0;
+            eventFields.course_id = NOT_SELECTED;
+            eventFields.shoe_id = NOT_SELECTED;
+            eventFields.extra_shoe_id = NOT_SELECTED;
+        } else {
+            eventFields.course_id = $('#courseSelect').val();
+            eventFields.shoe_id = $('#shoeSelect').val();
+            eventFields.extra_shoe_id = $('#extraShoeSelect').val();
+            if (runType == EventTypes.RECOVERY_RUN || runType == EventTypes.LONG_RUN) {
+                eventFields.extra_run_distance = 0;
+            }
+            if (eventFields.extra_run_distance == 0) {
+                eventFields.extra_shoe_id = NOT_SELECTED;
+            }
         }
-        eventFields.notes = $('#notes').val();
-        eventFields.shoe_id = $('#shoesSelect').val();
-        eventFields.course_id = $('#courseSelect').val();
         eventFields.run_type_id = $('#run_types').val();
+        eventFields.notes = $('#notes').val();
         eventFields.runner_id = $('#users').val();
         return eventFields;
     },
@@ -587,7 +610,7 @@ var EventDialog = {
     // set the data and populates relevant fields according to the given calendar event
     setData:function (calEvent) {
         $.ajax({
-            url:'php/get_event_details.php',
+            url:'php/get_event_details2.php',
             dataType:'text',
             data:{
                 event_id:calEvent.event_id,
@@ -599,20 +622,19 @@ var EventDialog = {
                     alert("Get event details failed: " + doc.status.emessage);
                 } else {
                     SelectUtils.makeSelection('run_types', doc.data.selected_run_type.id);
-                    EventDialog.setSelectedItemOrShowLabel('shoesSelect', doc.data.selected_shoe.id, doc.data.selected_shoe.shoe_name, 'inactive_shoe');
                     if (doc.data.selected_course == null) {
                         doc.data.selected_course = 0;
                     }
                     EventDialog.setSelectedItemOrShowLabel('courseSelect', doc.data.selected_course.id, doc.data.selected_course.course_name, 'inactive_course');
+                    EventDialog.setSelectedItemOrShowLabel('shoeSelect', doc.data.selected_shoe.id, doc.data.selected_shoe.name, 'inactive_shoe');
+                    EventDialog.setSelectedItemOrShowLabel('extraShoeSelect', doc.data.selected_extra_shoe.id, doc.data.selected_extra_shoe.name, 'inactive_extra_shoe');
+                    EventDialog.shoesDetached = ($('#shoeSelect').val() != $('#extraShoeSelect').val());
                     $('#run_types').trigger('change');
 
                     var fields = doc.data.event_fields;
-                    $('#warmup_distance').val(fields.warmup_distance);
-                    $('#warmup_time').val(Time.convertSecondsToMMSS(fields.warmup_time));
                     $('#run_distance').val(Time.paddWithZero(fields.run_distance));
                     $('#run_time').val(Time.convertSecondsToHMMSS(fields.run_time));
-                    $('#cooldown_distance').val(fields.cooldown_distance);
-                    $('#cooldown_time').val(Time.convertSecondsToMMSS(fields.cooldown_time));
+                    $('#extra_run_distance').val(fields.extra_distance);
                     $('#notesContainer').empty().append('<textarea id="notes"></textarea>');
                     $('#notes').val(fields.notes).elastic();
                     EventDialog.calculatePace();
@@ -627,18 +649,20 @@ var EventDialog = {
     runTypeChanged:function () {
         var runType = $('#run_types').val();
         if (runType == EventTypes.OTHER_SPORT || runType == EventTypes.REST_DAY || runType == EventTypes.EVENT_CANCELED) {
-            $('#user_shoes').hide();
             $('#user_courses').hide();
             $('#duration_distance_pace').hide();
         }
         else {
-            if ($('#user_shoes option').length > 1) {
-                $('#user_shoes').show();
-            }
             if ($('#user_courses option').length > 1) {
                 $('#user_courses').show();
             }
             $('#duration_distance_pace').show();
+
+            if (runType == EventTypes.RECOVERY_RUN || runType == EventTypes.LONG_RUN) {
+                $('#extra_run').hide();
+            } else {
+                $('#extra_run').show();
+            }
         }
     },
 
@@ -652,14 +676,20 @@ var EventDialog = {
         }
     },
 
+    shoeChanged:function () {
+        if (!EventDialog.shoesDetached) {
+            $('#extraShoeSelect').val($('#shoeSelect').val());
+        }
+    },
+
+    extraShoeChanged:function () {
+        EventDialog.shoesDetached = true;
+    },
+
     // calculates the pace values according to distance and duration and displays the values if calculation succeeds
     calculatePace:function () {
-        var warmup_pace = Time.calculatePace($('#warmup_distance').val(), Time.convertMMSSToSeconds($('#warmup_time').val()));
-        $('#warmup_pace').html(warmup_pace);
         var run_pace = Time.calculatePace($('#run_distance').val(), Time.convertHMMSSToSeconds($('#run_time').val()));
         $('#run_pace').html(run_pace);
-        var cooldown_pace = Time.calculatePace($('#cooldown_distance').val(), Time.convertMMSSToSeconds($('#cooldown_time').val()));
-        $('#cooldown_pace').html(cooldown_pace);
     }
 };
 
@@ -707,16 +737,16 @@ var Comments = {
         var commentHtml =
             '<div class="' + commentCssClass + '" id="event_comment_' + comment.comment_id + '">' +
                 Comments.getCommentHtml(comment.event_id, comment.comment_id, comment.commenter_name, comment.comment)  +
-            '</div>'
+                '</div>'
         $eventComments.append(commentHtml);
     },
 
     getCommentHtml: function(eventId, commentId, commenterName, comment) {
         var commentHtml =
             '<b>' + commenterName + '</b>: <span id="event_comment_inner_' + commentId + '">' + comment + '</span>' +
-            (commenterName == gMemberName ?
-		        ' <a class="menu_btn" href="#" onclick="Comments.showMenu(\'' + eventId + '\', \'' + commentId + '\'); return false;">&or;</a>' :
-                '');
+                (commenterName == gMemberName ?
+                    ' <a class="menu_btn" href="#" onclick="Comments.showMenu(\'' + eventId + '\', \'' + commentId + '\'); return false;">&or;</a>' :
+                    '');
 
         return commentHtml;
     },
@@ -761,7 +791,7 @@ var Comments = {
             });
         }
     },
-    
+
     showMenu: function(eventId, commentId) {
 
         var commentMenu = $('#comment_menu');
@@ -771,10 +801,10 @@ var Comments = {
         if ($comment.find(commentMenu).length == 0) {
             Comments.hideMenu();
             commentMenu.html(
-            '<ul>' +
-            '	<li><a href="#" onclick="Comments.editComment(' + eventId + ', ' + commentId + '); return false;">עריכה</a></li>' +
-            '	<li><a href="#" onclick="Comments.removeComment(' + eventId + ', ' + commentId + '); return false;">מחיקה</a></li>' +
-            '</ul>');
+                '<ul>' +
+                    '	<li><a href="#" onclick="Comments.editComment(' + eventId + ', ' + commentId + '); return false;">עריכה</a></li>' +
+                    '	<li><a href="#" onclick="Comments.removeComment(' + eventId + ', ' + commentId + '); return false;">מחיקה</a></li>' +
+                    '</ul>');
 
             $comment.append(commentMenu);
             commentMenu.show();
@@ -782,11 +812,11 @@ var Comments = {
             Comments.hideMenu();
         }
     },
-    
+
     hideMenu: function() {
-    	var commentMenu = $('#comment_menu');
-    	commentMenu.hide();
-    	$('.content').append(commentMenu);
+        var commentMenu = $('#comment_menu');
+        commentMenu.hide();
+        $('.content').append(commentMenu);
     },
 
     onEditCommentKeyDowm: function (e) {
@@ -829,8 +859,8 @@ var Comments = {
     },
 
     editComment: function (eventId, commentId) {
-    	Comments.hideMenu();
-    	
+        Comments.hideMenu();
+
         var $eventComments = $('#event_comments_' + eventId);
         var $comment = $eventComments.find('#event_comment_' + commentId);
         var commentText = $comment.find('#event_comment_inner_' + commentId).text();
@@ -921,8 +951,8 @@ var Functions = {
                     $.each(doc.data, function (index, item) {
                         $('#users')
                             .append($("<option></option>")
-                            .attr("value", item.id)
-                            .text(item.member_name));
+                                .attr("value", item.id)
+                                .text(item.member_name));
                     });
                     $('#users').val(memberId);
                     $('#users').show();
@@ -1248,7 +1278,7 @@ var Time = {
     },
 
     paddWithZero:function paddWithZero(input) {
-        return input <= 9 ? "0" + input : input;
+        return input <= 10 ? "0" + input : input;
     },
     /**
      *

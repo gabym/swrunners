@@ -21,9 +21,9 @@ define('tl_logger', 'tl_logger');
 define('MIN_RUN_DISTANCE', 0);
 define('MAX_RUN_DISTANCE', 99.9);
 define('MIN_EXTRA_DISTANCE', 0);
-define('MAX_EXTRA_DISTANCE', 9.9);
+define('MAX_EXTRA_DISTANCE', 99.9);
 define('MIN_RUN_TIME', 0);
 define('MAX_RUN_TIME', 35999);
 
-define('JS_VERSION', 43);
+define('JS_VERSION', 44);
 define('CSS_VERSION', 12);

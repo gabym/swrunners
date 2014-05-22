@@ -421,7 +421,7 @@ var EventDialog = {
         $.mask.definitions['5'] = "[0-5]";
         $('#run_distance').mask('99.9', {placeholder:"0"});
         $('#run_time').mask('9:59:59', {placeholder:"0"});
-        $('#extra_run_distance').mask('9.9', {placeholder:"0"});
+        $('#extra_run_distance').mask('99.9', {placeholder:"0"});
 
         // handler for distance, duration change event in order to update pace
         $('#main_run input[type="text"]').blur(this.calculatePace);
@@ -443,7 +443,7 @@ var EventDialog = {
         $('#run_distance').val('00.0');
         $('#run_time').val('0:00:00');
         $('#run_pace').text('');
-        $('#extra_run_distance').val('0.0');
+        $('#extra_run_distance').val('00.0');
 
         $('#notesContainer').empty().append('<textarea id="notes"></textarea>');
         $('#notes').val('').elastic();
@@ -634,7 +634,7 @@ var EventDialog = {
                     var fields = doc.data.event_fields;
                     $('#run_distance').val(Time.paddWithZero(fields.run_distance));
                     $('#run_time').val(Time.convertSecondsToHMMSS(fields.run_time));
-                    $('#extra_run_distance').val(fields.extra_distance);
+                    $('#extra_run_distance').val(Time.paddWithZero(fields.extra_distance));
                     $('#notesContainer').empty().append('<textarea id="notes"></textarea>');
                     $('#notes').val(fields.notes).elastic();
                     EventDialog.calculatePace();

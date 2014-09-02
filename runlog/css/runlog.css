@@ -319,6 +319,7 @@ table.tablesorter .active_col {
     position: relative;
     padding: 5px 5px 5px 20px;
     width: 330px;
+    overflow: hidden;
 }
 
 #feed .day_events .event .comments .new_comment {

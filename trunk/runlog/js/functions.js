@@ -743,10 +743,11 @@ var Comments = {
 
     getCommentHtml: function(eventId, commentId, commenterName, comment) {
         var commentHtml =
-            '<b>' + commenterName + '</b>: <span id="event_comment_inner_' + commentId + '">' + comment + '</span>' +
+            '<span class="comment_html"><b>' + commenterName + '</b>: <span id="event_comment_inner_' + commentId + '">' + comment + '</span>' +
                 (commenterName == gMemberName ?
                     ' <a class="menu_btn" href="#" onclick="Comments.showMenu(\'' + eventId + '\', \'' + commentId + '\'); return false;">&or;</a>' :
-                    '');
+                    '') +
+                '</span>';
 
         return commentHtml;
     },
